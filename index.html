@@ -137,11 +137,12 @@ button.btn{background:linear-gradient(90deg,var(--accent),var(--accent2));border
 
         <div class="card" style="margin-top:12px">
           <div class="h2">Quick Actions</div>
-          <div style="display:flex;flex-wrap:wrap;gap:8px">
+          <div style="display:flex;flex-wrap:wrap;gap:10px">
             <button class="btn" id="btnDailyStart" title="Open daily tasks and start a quick exercise">Start Daily Task</button>
             <button class="ghost" id="btnPerf" title="View performance charts and trends">Performance Summary</button>
             <button class="ghost" id="btnBrain" title="Open EEG and start simulation">Brain Visualization</button>
             <button class="ghost" id="btnHint" title="See an AI tip based on your recent data">Show Hint</button>
+            <button class="ghost" id="btnSpeak" title="Speak current AI hint">Speak Hint</button>
             <button class="ghost" id="btnSettings" title="Open profile & settings">Profile / Settings</button>
           </div>
         </div>
@@ -187,6 +188,11 @@ button.btn{background:linear-gradient(90deg,var(--accent),var(--accent2));border
               </svg>
             </div>
           </div>
+        </div>
+        <div class="card" style="margin-top:12px">
+          <div class="h2">3D Brain Map (p5.js)</div>
+          <div id="brain3d" style="height:260px"></div>
+          <div class="muted" style="margin-top:6px">Real-time glow scales with attention/simulation load</div>
         </div>
       </section>
 
@@ -538,6 +544,7 @@ function migrateStore(){ if(!store.xp) store.xp=0; if(!store.level) store.level=
 /* ---------- UI refs ---------- */
 const tabs = document.querySelectorAll('nav.side .tab');
 const sections = document.querySelectorAll('main .fade-in, main section');
+try{ tabs.forEach(t=>{ t.setAttribute('role','button'); t.setAttribute('tabindex','0'); }); }catch(_){}
 // Delegated events so clicks always work
 document.addEventListener('click', (ev)=>{
   const t = ev.target.closest('nav.side .tab');
@@ -1096,6 +1103,18 @@ if(eegSimStartBtn){
   eegSimStopBtn.addEventListener('click', ()=>{ cancelEegSim(); document.getElementById('attnLabel').innerText = 'Attention: -'; });
 }
 
+// p5.js 3D brain map (WebGL)
+(function(){
+  if(!window.p5) return;
+  let attnVal = 50;
+  const attnSource = ()=>{ const t=document.getElementById('attnLabel'); const m=t&&/([0-9]+)%/.exec(t.innerText); return m? parseInt(m[1],10): (window.eegSimLoad||60); };
+  new p5((p)=>{
+    p.setup = ()=>{ const parent=document.getElementById('brain3d'); if(!parent) return; const c=p.createCanvas(parent.clientWidth,parent.clientHeight,p.WEBGL); c.parent(parent); };
+    p.windowResized = ()=>{ const parent=document.getElementById('brain3d'); if(parent) p.resizeCanvas(parent.clientWidth,parent.clientHeight); };
+    p.draw = ()=>{ const parent=document.getElementById('brain3d'); if(!parent) return; attnVal=attnSource(); p.background(8,14,32); p.orbitControl(1,1,0.1); const glow=p.map(attnVal,0,100,80,255); p.ambientLight(70); p.pointLight(glow,100,200, 220,-220,220); p.noStroke(); p.push(); p.rotateY(p.frameCount*0.01); p.rotateX(Math.sin(p.frameCount*0.01)*0.25); p.specularMaterial(glow,120,255,200); p.sphere(Math.min(p.width,p.height)/3, 40, 32); p.pop(); };
+  });
+})();
+
 // EEG tab sim controls reuse
 const eegSimStartBtn2 = document.getElementById('eegSimStart2');
 const eegSimStopBtn2 = document.getElementById('eegSimStop2');
@@ -1231,6 +1250,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
   s('btnPerf', ()=>{ switchTab('progress'); notify('Opening performance summary'); });
   s('btnBrain', ()=>{ switchTab('eeg'); setTimeout(()=>{ const btn=document.getElementById('eegSimStart2'); if(btn) btn.click(); }, 50); });
   s('btnHint', ()=>{ updateAIFeedback(); const t=document.getElementById('aiFeedback'); notify(t? t.innerText.replace('AI Feedback: ','AI: '):'AI hint'); });
+  s('btnSpeak', ()=>{ try{ const t=document.getElementById('aiFeedback'); const u=new SpeechSynthesisUtterance((t?t.innerText:'AI hint').replace('AI Feedback:','')); u.rate=1; u.pitch=1; speechSynthesis.cancel(); speechSynthesis.speak(u);}catch(e){notify('Speech not supported');} });
   s('btnSettings', ()=>{ switchTab('settings'); });
   updateUI();
 });
