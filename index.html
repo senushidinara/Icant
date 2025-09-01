@@ -87,11 +87,6 @@ button.btn{background:linear-gradient(90deg,var(--accent),var(--accent2));border
   .content-gap{margin-top:8px}
   .lottie-overlay{position:absolute;inset:0;pointer-events:none;opacity:0;transition:opacity .3s ease}
   .toggle-row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
-/* debug panel */
-.debug-panel{position:fixed;left:16px;bottom:16px;z-index:100;max-width:360px;width:90vw;display:none}
-.debug-panel.show{display:block}
-.debug-body{max-height:280px;overflow:auto;border:1px solid rgba(255,255,255,0.04);border-radius:8px;padding:8px;background:rgba(255,255,255,0.02);font-size:12px;line-height:1.5}
-.debug-actions{display:flex;gap:8px;margin-top:8px}
 </style>
 <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
 <script src="https://unpkg.com/three@0.160.0/build/three.min.js"></script>
@@ -111,7 +106,6 @@ button.btn{background:linear-gradient(90deg,var(--accent),var(--accent2));border
         <button class="ghost" id="themeToggle"><i class="fas fa-adjust"></i> Theme</button>
         <button class="ghost" id="exportCsvBtn"><i class="fas fa-file-csv"></i> Export CSV</button>
         <button class="ghost" id="exportPdfBtn"><i class="fas fa-file-pdf"></i> Export PDF</button>
-        <button class="ghost" id="debugToggle"><i class="fas fa-bug"></i> Debug</button>
       </div>
     </header>
 
@@ -560,14 +554,6 @@ button.btn{background:linear-gradient(90deg,var(--accent),var(--accent2));border
     <footer>© 2025 NeuroAssess Pro — client-side cognitive toolkit. Deploy `index.html` to Netlify as your site root.</footer>
   </div>
 
-<div class="debug-panel card" id="debugPanel">
-  <div class="h2">Debug Console</div>
-  <div class="debug-body" id="debugDump">No data</div>
-  <div class="debug-actions">
-    <button class="btn" id="debugCopy">Copy</button>
-    <button class="ghost" id="debugClear">Clear</button>
-  </div>
-</div>
 <div class="notify" id="notify"></div>
 
 <script>
@@ -1375,13 +1361,6 @@ document.addEventListener('DOMContentLoaded', ()=>{
   document.getElementById('ciTime').value = new Date().toTimeString().slice(0,5);
   const loadEl = document.getElementById('simLoad'); if(loadEl){ loadEl.addEventListener('input', ()=>{ eegSimLoad = parseInt(loadEl.value,10)||60; }); }
   const s = (id,fn)=>{ const el=document.getElementById(id); if(el) el.addEventListener('click', fn); };
-  // Debug
-  const dbg=document.getElementById('debugToggle'); if(dbg){ dbg.addEventListener('click', ()=> setDebugVisible(!__DBG_VISIBLE)); }
-  document.addEventListener('keydown', (e)=>{ if(e.key==='d' && (e.ctrlKey||e.metaKey)){ e.preventDefault(); setDebugVisible(!__DBG_VISIBLE); } });
-  document.addEventListener('click', (e)=>{ const q=(sel)=> e.target.closest && e.target.closest(sel); if(q('#eegSimStart')||q('#eegSimStart2')) logDbg('EEGSimStart'); if(q('#eegSimStop')||q('#eegSimStop2')) logDbg('EEGSimStop'); if(q('#nightStart')) logDbg('NightStart'); if(q('#nightStop')) logDbg('NightStop'); }, true);
-  const dcopy=document.getElementById('debugCopy'); if(dcopy){ dcopy.addEventListener('click', ()=>{ try{ navigator.clipboard.writeText(document.getElementById('debugDump').textContent||''); notify('Debug copied'); }catch(_){ } }); }
-  const dclear=document.getElementById('debugClear'); if(dclear){ dclear.addEventListener('click', ()=>{ __DBG_LOG=[]; renderDebugPanel(); }); }
-  if(location.search.includes('debug=1') || location.hash.includes('#debug')) setDebugVisible(true);
   s('btnDailyStart', ()=>{ switchTab('games'); newScramble(); notify('Daily task started'); });
   s('btnPerf', ()=>{ switchTab('progress'); notify('Opening performance summary'); });
   s('btnBrain', ()=>{ switchTab('eeg'); setTimeout(()=>{ const btn=document.getElementById('eegSimStart2'); if(btn) btn.click(); }, 50); });
@@ -1389,7 +1368,6 @@ document.addEventListener('DOMContentLoaded', ()=>{
   s('btnSpeak', ()=>{ try{ const t=document.getElementById('aiFeedback'); const u=new SpeechSynthesisUtterance((t?t.innerText:'AI hint').replace('AI Feedback:','')); u.rate=1; u.pitch=1; speechSynthesis.cancel(); speechSynthesis.speak(u);}catch(e){notify('Speech not supported');} });
   s('btnSettings', ()=>{ switchTab('settings'); });
   try{ initPlotlyEEG(); initThreeBrain(); ensureAmbientHowl(); startPlotlySim(); }catch(_){ }
-  if(typeof setDebugVisible==='function') setDebugVisible(true);
   updateUI();
 });
 
