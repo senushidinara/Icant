@@ -1244,6 +1244,10 @@ function shuffleArray(a){ return a.slice().sort(()=>Math.random()-0.5); }
 
 /* ---------- Small helpers used earlier ---------- */
 
+/* small interaction sound */
+let _ac; function clickTone(){ try{ _ac = _ac || new (window.AudioContext||window.webkitAudioContext)(); const o=_ac.createOscillator(); const g=_ac.createGain(); o.frequency.value=440; o.type='sine'; g.gain.setValueAtTime(0.0001,_ac.currentTime); g.gain.exponentialRampToValueAtTime(0.04,_ac.currentTime+0.01); g.gain.exponentialRampToValueAtTime(0.0001,_ac.currentTime+0.12); o.connect(g).connect(_ac.destination); o.start(); o.stop(_ac.currentTime+0.13);}catch(_){} }
+document.addEventListener('click', (e)=>{ if(e.target.closest('button')) clickTone(); });
+
 /* ---------- Initial setup ---------- */
 document.addEventListener('DOMContentLoaded', ()=>{
   setupBoard();
