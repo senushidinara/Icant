@@ -6,6 +6,7 @@
 <title>NeuroAssess Pro — Cognitive Suite</title>
 
 <!-- External libs -->
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
@@ -16,11 +17,11 @@
 <style>
   /* ---------- Theme & layout ---------- */
   :root{
-    --bg1:#071129; --bg2:#0f1724; --card:rgba(255,255,255,0.03);
-    --muted:#a7b3c4; --accent:#7c4dff; --accent2:#00e5ff; --good:#10b981;
+    --bg1:#111827; --bg2:#0b1220; --card:rgba(255,255,255,0.03);
+    --muted:#a7b3c4; --accent:#4F46E5; --accent2:#22D3EE; --accent3:#FBBF24; --good:#10b981;
     --glass: rgba(255,255,255,0.03);
   }
-  *{box-sizing:border-box;margin:0;padding:0;font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial;}
+  *{box-sizing:border-box;margin:0;padding:0;font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial;} .h2, .brand{font-family:Poppins,Inter,system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial;}
   body{min-height:100vh;background:linear-gradient(135deg,var(--bg1),var(--bg2));color:#e6eef8;padding:24px;line-height:1.75;font-size:20px}
   .wrap{max-width:1300px;margin:0 auto;display:grid;grid-template-columns:260px 1fr 360px;gap:24px}
   header{grid-column:1/-1;display:flex;align-items:center;gap:12px;padding:16px;border-radius:14px;background:linear-gradient(90deg,rgba(255,255,255,0.02),rgba(255,255,255,0.01));border:1px solid rgba(255,255,255,0.03)}
@@ -43,9 +44,9 @@ button.btn{background:linear-gradient(90deg,var(--accent),var(--accent2));border
   .card{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));padding:16px;border-radius:14px;border:1px solid rgba(255,255,255,0.03);box-shadow:0 10px 28px rgba(0,0,0,0.22);backdrop-filter:blur(8px);transition:transform .18s ease, box-shadow .2s ease}
   .games-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px}
   .game{padding:10px;border-radius:10px;background:linear-gradient(90deg, rgba(255,255,255,0.01), rgba(255,255,255,0.02));border:1px solid rgba(255,255,255,0.02);text-align:center}
-  .big-count{font-size:2rem;font-weight:800;color:var(--accent)}
+  .big-count{font-size:2.2rem;font-weight:800;color:var(--accent)}
   .progress{height:10px;background:rgba(255,255,255,0.02);border-radius:6px;overflow:hidden}
-  .progress > i{display:block;height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));width:0%;transition:width .4s ease}
+  .progress > i{display:block;height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2),var(--accent3));width:0%;transition:width .4s ease}
   footer{grid-column:1/-1;margin-top:18px;color:var(--muted);text-align:center;font-size:0.9rem}
   /* animations */
   .pulse{animation:pulse 2.5s ease-in-out infinite}
@@ -61,7 +62,7 @@ button.btn{background:linear-gradient(90deg,var(--accent),var(--accent2));border
   .level-title{color:var(--muted)}
   .level-progress{margin-top:6px}
   .badge-bar{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
-  .badge-chip{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border-radius:999px;background:linear-gradient(90deg, rgba(124,77,255,0.18), rgba(0,229,255,0.14));border:1px solid rgba(255,255,255,0.06);font-size:0.9rem}
+  .badge-chip{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border-radius:999px;background:linear-gradient(90deg, rgba(79,70,229,0.22), rgba(34,211,238,0.18), rgba(251,191,36,0.16));border:1px solid rgba(255,255,255,0.06);font-size:0.95rem}
   .ai-panel{margin-top:12px}
   .ai-bubble{padding:12px;border-radius:12px;background:linear-gradient(90deg, rgba(124,77,255,0.14), rgba(0,229,255,0.1));border:1px solid rgba(255,255,255,0.05);animation:fadeIn .45s ease}
   .mini-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
@@ -588,8 +589,8 @@ function updateUI(){
 
 /* ---------- Theme toggle ---------- */
 document.getElementById('themeToggle').addEventListener('click', ()=>{
-  if(store.settings.theme === 'dark'){ store.settings.theme = 'light'; document.documentElement.style.setProperty('--bg1','#f6f8fb'); document.documentElement.style.setProperty('--bg2','#ebf0f6'); document.body.style.color='#111'; } 
-  else { store.settings.theme = 'dark'; document.documentElement.style.setProperty('--bg1','#071129'); document.documentElement.style.setProperty('--bg2','#0f1724'); document.body.style.color='#e6eef8'; }
+  if(store.settings.theme === 'dark'){ store.settings.theme = 'light'; document.documentElement.style.setProperty('--bg1','#F9FAFB'); document.documentElement.style.setProperty('--bg2','#EEF2F7'); document.body.style.color='#111'; }
+  else { store.settings.theme = 'dark'; document.documentElement.style.setProperty('--bg1','#111827'); document.documentElement.style.setProperty('--bg2','#0b1220'); document.body.style.color='#e6eef8'; }
   saveStore();
 });
 
@@ -693,7 +694,7 @@ function renderAveragesList(){
   const out = document.getElementById('avgList');
   if(!last7.length){ out.innerText='No data'; return; }
   const m = v=> (last7.reduce((a,b)=>a+(b[v]||0),0)/last7.length).toFixed(2);
-  out.innerHTML = `Mood ${m('mood')} • Mem ${m('memory')} • Focus ${m('focus')} • Sleep ${m('sleep')}`;
+  out.innerHTML = `Mood ${m('mood')} • Mem ${m('memory')} ��� Focus ${m('focus')} • Sleep ${m('sleep')}`;
 }
 
 function computeStreak(){
