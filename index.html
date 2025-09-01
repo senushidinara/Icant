@@ -132,6 +132,17 @@
           <div class="badge-bar" id="badgeBar"></div>
         </div>
 
+        <div class="card" style="margin-top:12px">
+          <div class="h2">Quick Actions</div>
+          <div style="display:flex;flex-wrap:wrap;gap:8px">
+            <button class="btn" id="btnDailyStart" title="Open daily tasks and start a quick exercise">Start Daily Task</button>
+            <button class="ghost" id="btnPerf" title="View performance charts and trends">Performance Summary</button>
+            <button class="ghost" id="btnBrain" title="Open EEG and start simulation">Brain Visualization</button>
+            <button class="ghost" id="btnHint" title="See an AI tip based on your recent data">Show Hint</button>
+            <button class="ghost" id="btnSettings" title="Open profile & settings">Profile / Settings</button>
+          </div>
+        </div>
+
         <div style="margin-top:12px;display:grid;grid-template-columns:1fr 1fr;gap:12px">
           <div class="card">
             <div class="h2">Quick Health Summary</div>
@@ -152,9 +163,11 @@
           <div class="mini-grid">
             <div>
               <canvas id="eegSim" height="140"></canvas>
-              <div style="display:flex;gap:8px;margin-top:8px">
+              <div style="display:flex;gap:8px;margin-top:8px;align-items:center">
                 <button class="btn" id="eegSimStart">Start Simulation</button>
                 <button class="ghost" id="eegSimStop">Stop</button>
+                <label class="muted" style="margin-left:8px">Load</label>
+                <input id="simLoad" type="range" min="0" max="100" value="60" style="width:140px"/>
               </div>
               <div class="muted" id="attnLabel" style="margin-top:6px">Attention: -</div>
             </div>
@@ -417,6 +430,8 @@
         <input id="userName" placeholder="Your name" />
         <label style="margin-top:8px">Theme</label>
         <select id="themeSelect"><option value="dark">Dark</option><option value="light">Light</option></select>
+        <label style="margin-top:8px">Difficulty</label>
+        <select id="difficulty"><option value="1">Easy</option><option value="2" selected>Normal</option><option value="3">Hard</option></select>
         <label style="margin-top:8px">Enable Sync (placeholder)</label>
         <select id="enableSync"><option value="off">Off (local only)</option><option value="on">On — configure server</option></select>
         <div style="margin-top:12px;display:flex;gap:8px">
@@ -777,10 +792,13 @@ function checkBoardComplete(){
 document.getElementById('cardReset').addEventListener('click', ()=> { setupBoard(); });
 
 /* ---------- Scramble game ---------- */
-const SCRAMBLE_WORDS = ['planet','coffee','mirror','guitar','bridge','teacher','lamp','window','airport','container'];
+const SCRAMBLE_WORDS = ['planet','coffee','mirror','guitar','bridge','teacher','lamp','window','airport','container','algorithm','solution','geometry','momentum','harmony','character'];
 let currentScramble = ''; let scrambleStart=0; let scrambleAttempts=0;
 function newScramble(){
-  const w = SCRAMBLE_WORDS[Math.floor(Math.random()*SCRAMBLE_WORDS.length)];
+  const diff = parseInt((store.settings.difficulty||'2'),10);
+  const minLen = diff===1?5:(diff===2?7:9);
+  const pool = SCRAMBLE_WORDS.filter(w=> w.length>=minLen);
+  const w = (pool.length?pool:SCRAMBLE_WORDS)[Math.floor(Math.random()* (pool.length?pool:SCRAMBLE_WORDS).length)];
   currentScramble = w; scrambleStart=performance.now(); scrambleAttempts=0;
   document.getElementById('scrambleWord').innerText = shuffleArray(w.split('')).join('');
   document.getElementById('scrambleRes').innerText = '';
@@ -806,7 +824,9 @@ document.getElementById('scrambleCheck').addEventListener('click', ()=>{
 /* ---------- Pattern game (simple) ---------- */
 let patternSeq = [];
 function startPattern(){
-  patternSeq = Array.from({length:6}, ()=> Math.floor(Math.random()*6)+1);
+  const diff = parseInt((store.settings.difficulty||'2'),10);
+  const len = 4 + (diff-1)*2;
+  patternSeq = Array.from({length:len}, ()=> Math.floor(Math.random()*6)+1);
   const el = document.getElementById('patternCanvas');
   el.innerText = 'Observe the pattern...';
   setTimeout(()=>{ el.innerText = 'Now type the sequence separated by spaces'; el.contentEditable = true; }, 1800);
@@ -850,7 +870,7 @@ document.getElementById('nbackBtn').addEventListener('click', ()=>{
   if(nbackRunning) return;
   nbackRunning=true; nbackSeq=[]; nbackIndex=0; nbackCorrect=0; document.getElementById('nbackShow').innerText='Ready';
   const letters = 'ABCDEFGH';
-  let rounds=12;
+  let rounds = 10 + (parseInt((store.settings.difficulty||'2'),10)-1)*4;
   function step(){
     if(!nbackRunning || nbackIndex >= rounds){ endNback(); return; }
     const ch = letters[Math.floor(Math.random()*letters.length)];
@@ -983,7 +1003,7 @@ document.getElementById('flowStart').addEventListener('click', ()=>{
 });
 
 /* ---------- EEG upload & simple metrics ---------- */
-let eegData = null; let eegSimInt=null; let eegSimPhase=0;
+let eegData = null; let eegSimInt=null; let eegSimPhase=0; let eegSimLoad=60;
 document.getElementById('eegFile').addEventListener('change', (ev)=>{
   const f = ev.target.files[0];
   if(!f) return;
@@ -1031,7 +1051,8 @@ function startEegSim(targetCanvasId, onAttention){
     ctx.strokeStyle = '#4f46e5'; ctx.lineWidth=2; ctx.beginPath();
     const alpha = 0.6+0.4*Math.sin(t/17+eegSimPhase);
     const beta = 0.6+0.4*Math.cos(t/11+eegSimPhase*0.7);
-    const attn = Math.max(0, Math.min(100, Math.round(60*beta/(alpha+0.2))));
+    const base = Math.max(0, Math.min(100, Math.round(60*beta/(alpha+0.2))));
+    const attn = Math.round(0.7*base + 0.3*eegSimLoad);
     for(let x=0;x<w;x++){
       const y = h/2 + Math.sin((x+t)/14)*14*alpha + Math.sin((x+t)/6)*6*beta + (Math.random()-0.5)*2;
       if(x===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
@@ -1055,7 +1076,7 @@ const eegSimStartBtn = document.getElementById('eegSimStart');
 const eegSimStopBtn = document.getElementById('eegSimStop');
 if(eegSimStartBtn){
   eegSimStartBtn.addEventListener('click', ()=>{
-    startEegSim('eegSim', (attn)=>{ document.getElementById('attnLabel').innerText = 'Attention: '+attn+'%'; glowBrain('brainSvg', attn); document.getElementById('nfStatus').innerText = 'Attention: '+attn+'%'; glowBrain('brainSvg2', attn); });
+    startEegSim('eegSim', (attn)=>{ document.getElementById('attnLabel').innerText = 'Attention: '+attn+'%'; const nf=document.getElementById('nfStatus'); if(nf) nf.innerText = 'Attention: '+attn+'%'; glowBrain('brainSvg', attn); glowBrain('brainSvg2', attn); });
     checkAndAwardBadge('EEGSimRun','EEG Simulation','fa-bolt');
   });
   eegSimStopBtn.addEventListener('click', ()=>{ cancelEegSim(); document.getElementById('attnLabel').innerText = 'Attention: -'; });
@@ -1064,7 +1085,7 @@ if(eegSimStartBtn){
 // EEG tab sim controls reuse
 const eegSimStartBtn2 = document.getElementById('eegSimStart2');
 const eegSimStopBtn2 = document.getElementById('eegSimStop2');
-if(eegSimStartBtn2){ eegSimStartBtn2.addEventListener('click', ()=>{ startEegSim('eegPlot', (attn)=>{ document.getElementById('nfStatus').innerText = 'Attention: '+attn+'%'; glowBrain('brainSvg2', attn); }); }); }
+if(eegSimStartBtn2){ eegSimStartBtn2.addEventListener('click', ()=>{ startEegSim('eegPlot', (attn)=>{ const nf=document.getElementById('nfStatus'); if(nf) nf.innerText = 'Attention: '+attn+'%'; glowBrain('brainSvg2', attn); }); }); }
 if(eegSimStopBtn2){ eegSimStopBtn2.addEventListener('click', ()=>{ cancelEegSim(); document.getElementById('nfStatus').innerText='Attention: -'; }); }
 
 document.getElementById('computeEeg').addEventListener('click', ()=>{
@@ -1164,6 +1185,7 @@ document.getElementById('exportPdfBtn').addEventListener('click', async ()=>{
 document.getElementById('saveSettings').addEventListener('click', ()=>{
   store.name = document.getElementById('userName').value || store.name;
   store.settings.theme = document.getElementById('themeSelect').value;
+  store.settings.difficulty = document.getElementById('difficulty').value;
   saveStore();
   alert('Settings saved (local).');
 });
@@ -1189,6 +1211,13 @@ document.addEventListener('DOMContentLoaded', ()=>{
   newScramble();
   document.getElementById('ciDate').value = new Date().toISOString().slice(0,10);
   document.getElementById('ciTime').value = new Date().toTimeString().slice(0,5);
+  const loadEl = document.getElementById('simLoad'); if(loadEl){ loadEl.addEventListener('input', ()=>{ eegSimLoad = parseInt(loadEl.value,10)||60; }); }
+  const s = (id,fn)=>{ const el=document.getElementById(id); if(el) el.addEventListener('click', fn); };
+  s('btnDailyStart', ()=>{ switchTab('games'); newScramble(); notify('Daily task started'); });
+  s('btnPerf', ()=>{ switchTab('progress'); notify('Opening performance summary'); });
+  s('btnBrain', ()=>{ switchTab('eeg'); setTimeout(()=>{ const btn=document.getElementById('eegSimStart2'); if(btn) btn.click(); }, 50); });
+  s('btnHint', ()=>{ updateAIFeedback(); notify(document.getElementById('aiFeedback').innerText.replace('AI Feedback: ','AI: ')); });
+  s('btnSettings', ()=>{ switchTab('settings'); });
   updateUI();
 });
 
