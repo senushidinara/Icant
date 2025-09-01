@@ -48,6 +48,26 @@
   @keyframes fadeIn {from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
   /* responsive */
   @media (max-width:1100px){ .wrap{grid-template-columns:1fr; } nav.side{height:auto} .right{height:auto} }
+
+  /* New classes for added UI (keep blue/rounded theme) */
+  .header-right{margin-left:auto;display:flex;gap:8px;align-items:center}
+  .level-box{min-width:220px;text-align:center}
+  .level-title{color:var(--muted)}
+  .level-progress{margin-top:6px}
+  .badge-bar{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+  .badge-chip{display:inline-flex;align-items:center;gap:6px;padding:6px 8px;border-radius:999px;background:rgba(79,70,229,0.12);border:1px solid rgba(255,255,255,0.04);font-size:0.8rem}
+  .ai-panel{margin-top:12px}
+  .ai-bubble{padding:10px;border-radius:10px;background:linear-gradient(90deg, rgba(79,70,229,0.12), rgba(6,182,212,0.08));border:1px solid rgba(255,255,255,0.04)}
+  .mini-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .brain-wrap{display:flex;align-items:center;justify-content:center}
+  .brain-svg{width:100%;max-width:260px}
+  .coach-wrap{display:flex;flex-direction:column;gap:8px}
+  .coach-log{height:180px;overflow:auto;border:1px solid rgba(255,255,255,0.04);border-radius:8px;padding:8px;background:rgba(255,255,255,0.02)}
+  .coach-msg{margin:6px 0}
+  .coach-msg.me{text-align:right}
+  .coach-input{display:flex;gap:8px}
+  .notify{position:fixed;right:16px;bottom:16px;padding:10px 12px;border-radius:10px;background:linear-gradient(90deg, rgba(79,70,229,0.9), rgba(6,182,212,0.9));color:#fff;box-shadow:0 8px 24px rgba(0,0,0,0.2);transform:translateY(120%);opacity:0;transition:all 0.35s ease;z-index:99}
+  .notify.show{transform:translateY(0);opacity:1}
 </style>
 </head>
 <body>
@@ -57,7 +77,7 @@
         <div class="brand">NEUROASSESS PRO</div>
         <div class="subtitle">Personalized cognitive toolkit — truthful results only</div>
       </div>
-      <div style="margin-left:auto;display:flex;gap:8px;align-items:center">
+      <div class="header-right">
         <button class="ghost" id="themeToggle"><i class="fas fa-adjust"></i> Theme</button>
         <button class="ghost" id="exportCsvBtn"><i class="fas fa-file-csv"></i> Export CSV</button>
         <button class="ghost" id="exportPdfBtn"><i class="fas fa-file-pdf"></i> Export PDF</button>
@@ -88,6 +108,12 @@
             <div class="muted">Real scores derived from your entries & game performance</div>
           </div>
           <div style="display:flex;gap:8px;align-items:center">
+            <div class="card level-box">
+              <div class="level-title">Level <span id="levelNum">1</span></div>
+              <div class="big-count" id="xpNum">0 XP</div>
+              <div class="progress level-progress"><i id="xpBar" style="width:0%"></i></div>
+              <div class="muted" id="xpHint">0 / 100</div>
+            </div>
             <div class="card" style="min-width:220px;text-align:center">
               <div class="muted">Brain Points</div>
               <div id="points" class="big-count">0</div>
@@ -99,6 +125,11 @@
               <div class="muted">Daily active days</div>
             </div>
           </div>
+        </div>
+
+        <div style="margin-top:12px" class="ai-panel">
+          <div class="ai-bubble" id="aiFeedback">AI Feedback: Complete a check-in or game to see insights here.</div>
+          <div class="badge-bar" id="badgeBar"></div>
         </div>
 
         <div style="margin-top:12px;display:grid;grid-template-columns:1fr 1fr;gap:12px">
@@ -116,6 +147,31 @@
             </div>
           </div>
         </div>
+        <div class="card" style="margin-top:12px">
+          <div class="h2">Brain Activity (Simulated)</div>
+          <div class="mini-grid">
+            <div>
+              <canvas id="eegSim" height="140"></canvas>
+              <div style="display:flex;gap:8px;margin-top:8px">
+                <button class="btn" id="eegSimStart">Start Simulation</button>
+                <button class="ghost" id="eegSimStop">Stop</button>
+              </div>
+              <div class="muted" id="attnLabel" style="margin-top:6px">Attention: -</div>
+            </div>
+            <div class="brain-wrap">
+              <svg class="brain-svg" viewBox="0 0 200 140" id="brainSvg" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                  <linearGradient id="g1" x1="0" x2="1"><stop offset="0" stop-color="#4f46e5" stop-opacity="0.4"/><stop offset="1" stop-color="#06b6d4" stop-opacity="0.4"/></linearGradient>
+                </defs>
+                <path id="brainL" d="M60,30 C30,40 20,70 40,95 C60,120 90,120 100,105 C110,120 140,120 160,95 C180,70 170,40 140,30 C130,15 70,15 60,30 Z" fill="url(#g1)" stroke="rgba(255,255,255,0.15)"/>
+                <g fill="none" stroke="rgba(255,255,255,0.25)">
+                  <path d="M80,40 C70,60 70,80 84,92"/>
+                  <path d="M120,40 C130,60 130,80 116,92"/>
+                </g>
+              </svg>
+            </div>
+          </div>
+        </div>
       </section>
 
       <!-- Check-in -->
@@ -127,6 +183,8 @@
           <div class="card">
             <label>Date</label>
             <input id="ciDate" type="date" />
+            <label style="margin-top:8px">Time</label>
+            <input id="ciTime" type="time" />
             <label style="margin-top:8px">Mood</label>
             <div style="display:flex;gap:8px;align-items:center">
               <input id="ciMood" type="range" min="0" max="10" value="5" />
@@ -305,12 +363,29 @@
               <canvas id="eegPlot" height="160"></canvas>
             </div>
             <div id="eegMetrics" class="muted" style="margin-top:8px"></div>
+            <div style="display:flex;gap:8px;margin-top:8px">
+              <button class="btn" id="eegSimStart2">Start Simulation</button>
+              <button class="ghost" id="eegSimStop2">Stop</button>
+            </div>
           </div>
           <div class="card">
             <div class="h2">Explorer Tools</div>
             <div class="muted">Quick metrics: mean, sd, peak-to-peak, simple band-ish power via FFT (exploratory)</div>
             <button class="btn" id="computeEeg">Compute Metrics</button>
             <div id="eegExpl" class="muted" style="margin-top:8px"></div>
+            <div style="margin-top:12px">
+              <div class="h2">Neurofeedback</div>
+              <div class="muted">Regions glow when simulated attention rises</div>
+              <div class="brain-wrap" style="margin-top:8px">
+                <svg class="brain-svg" viewBox="0 0 200 140" id="brainSvg2" xmlns="http://www.w3.org/2000/svg">
+                  <defs>
+                    <linearGradient id="g2" x1="0" x2="1"><stop offset="0" stop-color="#4f46e5" stop-opacity="0.4"/><stop offset="1" stop-color="#06b6d4" stop-opacity="0.4"/></linearGradient>
+                  </defs>
+                  <path id="brain2" d="M60,30 C30,40 20,70 40,95 C60,120 90,120 100,105 C110,120 140,120 160,95 C180,70 170,40 140,30 C130,15 70,15 60,30 Z" fill="url(#g2)" stroke="rgba(255,255,255,0.15)"/>
+                </svg>
+              </div>
+              <div class="muted" id="nfStatus" style="margin-top:6px">Attention: -</div>
+            </div>
           </div>
         </div>
       </section>
@@ -382,6 +457,18 @@
       </div>
 
       <div class="card" style="margin-top:12px">
+        <div class="h2">Achievements & Coach</div>
+        <div class="badge-bar" id="badgeBarSide"></div>
+        <div class="coach-wrap" style="margin-top:8px">
+          <div class="coach-log" id="coachLog"></div>
+          <div class="coach-input">
+            <input id="coachText" placeholder="Ask the coach..." />
+            <button class="btn" id="coachSend">Send</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:12px">
         <div class="h2">How this app works</div>
         <div class="muted">All computations are local. Charted trends and suggestions derive only from your check-ins and game interactions. EEG upload is exploratory visualization.</div>
       </div>
@@ -389,6 +476,8 @@
 
     <footer>© 2025 NeuroAssess Pro — client-side cognitive toolkit. Deploy `index.html` to Netlify as your site root.</footer>
   </div>
+
+<div class="notify" id="notify"></div>
 
 <script>
 /* ============================
@@ -403,17 +492,30 @@ let store = {
   name: '',
   points: 0,
   streak: 0,
+  xp: 0,
+  level: 1,
+  badges: [],
   entries: [],   // check-ins & associated game results
   games: {},     // aggregated game stats
+  metrics: {reaction: [], scramble: [], memoryMatch: [], nback: []},
   settings: {theme:'dark'}
 };
 loadStore();
 
 /* ---------- Helpers ---------- */
 function saveStore(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(store)); updateUI(); }
-function loadStore(){ const s = localStorage.getItem(STORAGE_KEY); if(s) store = {...store, ...JSON.parse(s)}; updateUI(); }
+function loadStore(){ const s = localStorage.getItem(STORAGE_KEY); if(s) store = {...store, ...JSON.parse(s)}; migrateStore(); updateUI(); }
 function uid(n=6){ return Date.now().toString().slice(-5)+'-'+Math.random().toString(36).slice(2,n+2); }
 function clamp(v,min,max){ return Math.max(min,Math.min(max,v)); }
+function notify(msg){ const n=document.getElementById('notify'); n.innerText=msg; n.classList.add('show'); setTimeout(()=> n.classList.remove('show'), 2600); }
+
+/* ---------- Gamification ---------- */
+function xpForLevel(l){ return 100 + (l-1)*50; }
+function awardXP(x){ store.xp = (store.xp||0) + Math.max(0,Math.round(x)); while(store.xp >= xpForLevel(store.level)){ store.xp -= xpForLevel(store.level); store.level++; notify('Level up! You reached level '+store.level); checkAndAwardBadge('LevelUp'+store.level,'Level '+store.level,'fa-star'); } saveStore(); }
+function checkAndAwardBadge(key, label, icon){ if(store.badges.find(b=>b.key===key)) return; const b={key,label,icon,at:new Date().toISOString()}; store.badges.push(b); notify('New badge: '+label); saveStore(); }
+function updateLevelUI(){ document.getElementById('levelNum').innerText = store.level||1; document.getElementById('xpNum').innerText = (store.xp||0)+' XP'; const need = xpForLevel(store.level||1); const pct = Math.min(99, Math.round(((store.xp||0)/need)*100)); document.getElementById('xpBar').style.width = pct+'%'; document.getElementById('xpHint').innerText = (store.xp||0)+' / '+need; const badgeBar = document.getElementById('badgeBar'); const badgeBar2 = document.getElementById('badgeBarSide'); const html = (store.badges||[]).slice(-10).map(b=>`<span class="badge-chip"><i class="fas ${b.icon}"></i>${b.label}</span>`).join(''); badgeBar.innerHTML = html; badgeBar2.innerHTML = html; }
+
+function migrateStore(){ if(!store.xp) store.xp=0; if(!store.level) store.level=1; if(!store.badges) store.badges=[]; if(!store.metrics) store.metrics={reaction:[],scramble:[],memoryMatch:[],nback:[]}; }
 
 /* ---------- UI refs ---------- */
 const tabs = document.querySelectorAll('nav.side .tab');
@@ -430,15 +532,17 @@ function updateUI(){
   document.getElementById('pointBadge').innerText = store.points;
   document.getElementById('points').innerText = store.points;
   document.getElementById('streak').innerText = store.streak || 0;
+  updateLevelUI();
   // last check-in
   if(store.entries.length){
     const last = store.entries[store.entries.length-1];
-    document.getElementById('lastCheck').innerText = `${last.date} | mood ${last.mood} | mem ${last.memory} | focus ${last.focus}`;
+    document.getElementById('lastCheck').innerText = `${last.date}${last.time?(' '+last.time):''} | mood ${last.mood} | mem ${last.memory} | focus ${last.focus}`;
   } else document.getElementById('lastCheck').innerText = 'No check-ins';
   // quick summary & trends:
   renderSummary();
   renderMiniTrend();
   renderProgressChart();
+  updateAIFeedback();
 }
 
 /* ---------- Theme toggle ---------- */
@@ -450,6 +554,7 @@ document.getElementById('themeToggle').addEventListener('click', ()=>{
 
 /* ---------- Check-in logic ---------- */
 const ciDate = document.getElementById('ciDate');
+const ciTime = document.getElementById('ciTime');
 const ciMood = document.getElementById('ciMood');
 const ciMoodLabel = document.getElementById('ciMoodLabel');
 const ciSleep = document.getElementById('ciSleep');
@@ -465,24 +570,25 @@ ciSave.addEventListener('click', ()=>{
   const entry = {
     id: uid(),
     date: ciDate.value || new Date().toISOString().slice(0,10),
+    time: ciTime.value || new Date().toTimeString().slice(0,5),
     mood: clamp(Number(ciMood.value || 5), 0, 10),
     sleep: clamp(Number(ciSleep.value || 0), 0, 24),
     memory: clamp(Number(ciMemory.value || 0), 0, 10),
     focus: clamp(Number(ciFocus.value || 0), 0, 10),
     notes: (ciNotes.value || ''),
-    games: {} // filled when games played same session (optional)
+    games: {}
   };
   store.entries.push(entry);
-  // update streak (simple: days with entries in last N days)
   computeStreak();
-  // save
+  awardXP(10); awardPoints(5);
+  if(store.entries.length===1) checkAndAwardBadge('FirstCheckin','First Check-in','fa-check');
+  if(store.streak>=5) checkAndAwardBadge('Streak5','5-day Streak','fa-fire');
+  if(store.streak>=7) checkAndAwardBadge('Consistency7','Consistency 7','fa-calendar-check');
   saveStore();
   alert('Check-in saved locally.');
 });
 
-ciReset.addEventListener('click', ()=> {
-  ciMood.value = 5; ciMoodLabel.innerText = 5; ciSleep.value=''; ciMemory.value=''; ciFocus.value=''; ciNotes.value='';
-});
+ciReset.addEventListener('click', ()=> { ciMood.value = 5; ciMoodLabel.innerText = 5; ciSleep.value=''; ciMemory.value=''; ciFocus.value=''; ciNotes.value=''; });
 
 /* ---------- Summary & Trends ---------- */
 function renderSummary(){
@@ -499,14 +605,20 @@ function renderSummary(){
   if(avgFocus < 6) suggestions.push('Focus is low — try a 2-minute breathing break before tasks.');
   if(!suggestions.length) suggestions.push('Your short-term metrics look stable. Keep the routine up!');
   out.innerHTML = `<div>Last 7-day averages — Memory: <strong>${avgMem}</strong>, Focus: <strong>${avgFocus}</strong>, Mood: <strong>${avgMood}</strong>, Sleep: <strong>${avgSleep} hrs</strong></div><ul>${suggestions.map(s=>'<li>'+s+'</li>').join('')}</ul>`;
-  // suggestions panel
   document.getElementById('suggestList').innerHTML = suggestions.length ? suggestions.map(s=>'<div class="muted">• '+s+'</div>').join('') : '<div class="muted">No suggestions — keep going.</div>';
+  renderAveragesList();
+}
+
+function renderAveragesList(){
+  const last7 = store.entries.slice(-7);
+  const out = document.getElementById('avgList');
+  if(!last7.length){ out.innerText='No data'; return; }
+  const m = v=> (last7.reduce((a,b)=>a+(b[v]||0),0)/last7.length).toFixed(2);
+  out.innerHTML = `Mood ${m('mood')} • Mem ${m('memory')} • Focus ${m('focus')} • Sleep ${m('sleep')}`;
 }
 
 function computeStreak(){
-  // simple streak: count unique recent days with entries in last 14 days
-  const last14 = store.entries.slice(-14);
-  const days = new Set(last14.map(e=>e.date));
+  const days = new Set(store.entries.map(e=>e.date));
   store.streak = days.size;
 }
 
@@ -544,12 +656,12 @@ function renderProgressChart(){
 
 /* ---------- Games: Memory Card Match ---------- */
 let cardPairs = ['🐶','🐱','🦊','🐼','🦁','🐸','🐵','🐰'];
-let boardState = {tiles:[], first:null, second:null, matched:0, score:0};
+let boardState = {tiles:[], first:null, second:null, matched:0, score:0, moves:0, start:0};
 
 function setupBoard(){
   const pool = shuffle([...cardPairs, ...cardPairs]);
   boardState.tiles = pool.map((v,i)=>({id:i, val:v, revealed:false, matched:false}));
-  boardState.first = null; boardState.second = null; boardState.matched = 0; boardState.score = 0;
+  boardState.first = null; boardState.second = null; boardState.matched = 0; boardState.score = 0; boardState.moves=0; boardState.start=performance.now();
   renderBoard();
 }
 
@@ -565,22 +677,21 @@ function renderBoard(){
     btn.addEventListener('click', ()=> tileClick(t.id));
     board.appendChild(btn);
   });
-  document.getElementById('cardScore').innerText = 'Score: ' + boardState.score;
+  document.getElementById('cardScore').innerText = 'Score: ' + boardState.score + ' • Moves: ' + boardState.moves;
 }
 
 function tileClick(id){
   const t = boardState.tiles.find(x=>x.id===id);
   if(t.matched || t.revealed) return;
-  t.revealed = true;
+  t.revealed = true; boardState.moves++;
   if(!boardState.first) boardState.first = t;
   else if(!boardState.second && t.id !== boardState.first.id) {
     boardState.second = t;
-    // check match
     if(boardState.first.val === boardState.second.val){
       boardState.first.matched = true; boardState.second.matched = true; boardState.matched += 1;
       boardState.score += 10;
       boardState.first = boardState.second = null;
-      awardPoints(10);
+      awardPoints(10); awardXP(8);
       renderBoard();
       checkBoardComplete();
     } else {
@@ -598,10 +709,14 @@ function tileClick(id){
 
 function checkBoardComplete(){
   if(boardState.matched === cardPairs.length){
-    document.getElementById('cardScore').innerText = 'Completed! Score: ' + boardState.score;
-    awardPoints(50);
-    // record game summary
+    const time = Math.round((performance.now()-boardState.start)/1000);
+    document.getElementById('cardScore').innerText = 'Completed! Score: ' + boardState.score + ' • '+time+'s';
+    awardPoints(50); awardXP(25);
     store.games.memoryMatch = (store.games.memoryMatch || 0) + 1;
+    const acc = Math.round((boardState.matched/(boardState.moves/2))*100);
+    store.metrics.memoryMatch.push({time, acc, score:boardState.score, at:Date.now()});
+    if(time<=45) checkAndAwardBadge('MemorySwift','Memory Swift','fa-bolt');
+    if(acc>=85) checkAndAwardBadge('MemoryAccurate','Memory Accurate','fa-bullseye');
     saveStore();
   }
 }
@@ -610,10 +725,10 @@ document.getElementById('cardReset').addEventListener('click', ()=> { setupBoard
 
 /* ---------- Scramble game ---------- */
 const SCRAMBLE_WORDS = ['planet','coffee','mirror','guitar','bridge','teacher','lamp','window','airport','container'];
-let currentScramble = '';
+let currentScramble = ''; let scrambleStart=0; let scrambleAttempts=0;
 function newScramble(){
   const w = SCRAMBLE_WORDS[Math.floor(Math.random()*SCRAMBLE_WORDS.length)];
-  currentScramble = w;
+  currentScramble = w; scrambleStart=performance.now(); scrambleAttempts=0;
   document.getElementById('scrambleWord').innerText = shuffleArray(w.split('')).join('');
   document.getElementById('scrambleRes').innerText = '';
 }
@@ -621,18 +736,27 @@ document.getElementById('scrambleNew').addEventListener('click', newScramble);
 document.getElementById('scrambleCheck').addEventListener('click', ()=>{
   const guess = document.getElementById('scrambleInput').value.trim().toLowerCase();
   if(!guess) return alert('Type an answer');
+  scrambleAttempts++;
   if(guess === currentScramble){
-    document.getElementById('scrambleRes').innerText = 'Correct!';
-    awardPoints(15);
-  } else document.getElementById('scrambleRes').innerText = 'Try again';
+    const t = Math.round((performance.now()-scrambleStart)/1000);
+    document.getElementById('scrambleRes').innerText = 'Correct! ('+t+'s)';
+    awardPoints(15); awardXP(10);
+    store.metrics.scramble.push({time:t, attempts:scrambleAttempts, correct:true, at:Date.now()});
+    if(t<=5) checkAndAwardBadge('WordQuick','Word Quick','fa-rocket');
+  } else {
+    document.getElementById('scrambleRes').innerText = 'Try again';
+    store.metrics.scramble.push({time:0, attempts:scrambleAttempts, correct:false, at:Date.now()});
+  }
+  saveStore();
 });
 
 /* ---------- Pattern game (simple) ---------- */
 let patternSeq = [];
 function startPattern(){
   patternSeq = Array.from({length:6}, ()=> Math.floor(Math.random()*6)+1);
-  document.getElementById('patternCanvas').innerText = 'Observe the pattern...';
-  setTimeout(()=>{ document.getElementById('patternCanvas').innerText = 'Now type the sequence separated by spaces'; document.getElementById('patternCanvas').contentEditable = true; }, 1800);
+  const el = document.getElementById('patternCanvas');
+  el.innerText = 'Observe the pattern...';
+  setTimeout(()=>{ el.innerText = 'Now type the sequence separated by spaces'; el.contentEditable = true; }, 1800);
 }
 document.getElementById('patternStart').addEventListener('click', startPattern);
 document.getElementById('patternCheck').addEventListener('click', ()=>{
@@ -640,14 +764,14 @@ document.getElementById('patternCheck').addEventListener('click', ()=>{
   const arr = txt.split(/\s+/).map(Number);
   const ok = arr.length === patternSeq.length && arr.every((v,i)=>v===patternSeq[i]);
   document.getElementById('patternRes').innerText = ok ? 'Correct' : 'Incorrect — sequence was: ' + patternSeq.join(' ');
-  if(ok) awardPoints(20);
+  if(ok){ awardPoints(20); awardXP(12); }
 });
 
 /* ---------- Reaction game ---------- */
 let reactTimer = null, reactStart = 0;
 document.getElementById('reactBox').addEventListener('click', ()=>{
   const box = document.getElementById('reactBox');
-  if(reactTimer){ // click to abort
+  if(reactTimer){
     clearTimeout(reactTimer); reactTimer = null; box.innerText = 'Click to start'; return;
   }
   box.innerText = 'Wait...';
@@ -657,11 +781,13 @@ document.getElementById('reactBox').addEventListener('click', ()=>{
 document.getElementById('reactBox').addEventListener('mousedown', ()=>{
   if(!reactStart) return;
   const rt = Math.round(performance.now() - reactStart);
-  reactStart = 0; clearTimeout(reactTimer); reactTimer = null; document.getElementById('reactBox').style.background='rgba(255,255,255,0.02)'; document.getElementById('reactBox').innerText = `RT: ${rt} ms`;
+  reactStart = 0; clearTimeout(reactTimer); reactTimer = null; const box=document.getElementById('reactBox'); box.style.background='rgba(255,255,255,0.02)'; box.innerText = `RT: ${rt} ms`;
   const best = store.games.reactionBest ? Math.min(store.games.reactionBest, rt) : rt;
   store.games.reactionBest = best;
   document.getElementById('reactBest').innerText = best;
-  awardPoints( Math.max(1, Math.round(1000/rt)) );
+  awardPoints( Math.max(1, Math.round(1000/rt)) ); awardXP(Math.max(1, Math.round(600/rt)));
+  store.metrics.reaction.push({rt, at:Date.now()});
+  if(best<=250) checkAndAwardBadge('QuickReflex','Quick Reflex','fa-hand-pointer');
   saveStore();
 });
 
@@ -691,8 +817,11 @@ document.getElementById('nbackBtn').addEventListener('click', ()=>{
     nbackRunning=false;
     window.removeEventListener('keydown', nbackKey);
     document.getElementById('nbackRes').innerText = `Score: ${nbackCorrect}/${nbackIndex}`;
-    awardPoints(nbackCorrect*5);
+    awardPoints(nbackCorrect*5); awardXP(nbackCorrect*3);
     store.games.nback = (store.games.nback || 0) + 1;
+    const acc = Math.round((nbackCorrect/nbackIndex)*100);
+    store.metrics.nback.push({acc, at:Date.now()});
+    if(acc>=60) checkAndAwardBadge('Nback60','N-back 60%','fa-brain');
     saveStore();
   }
   step();
@@ -708,8 +837,9 @@ document.getElementById('wfStart').addEventListener('click', ()=>{
   if(ans !== null){
     wfList = ans.split(',').map(s=>s.trim()).filter(Boolean);
     document.getElementById('wfRes').innerText = 'You listed ' + wfList.length + ' words.';
-    awardPoints(wfList.length*2);
+    awardPoints(wfList.length*2); awardXP(Math.round(wfList.length*1.2));
     store.games.wordFluency = (store.games.wordFluency || 0) + wfList.length;
+    if(wfList.length>=15) checkAndAwardBadge('Fluent15','Word Fluent 15','fa-feather');
     saveStore();
   }
   wfActive=false;
@@ -741,7 +871,7 @@ document.getElementById('breathStart').addEventListener('click', ()=>{
   const el = document.getElementById('breathCircle');
   document.getElementById('breathStatus').innerText = 'Starting breathing';
   function cycle(){
-    if(count >= cycles){ clearInterval(breatheTimer); breatheTimer = null; document.getElementById('breathStatus').innerText='Done'; el.style.transform='scale(1)'; awardPoints(5); saveStore(); return; }
+    if(count >= cycles){ clearInterval(breatheTimer); breatheTimer = null; document.getElementById('breathStatus').innerText='Done'; el.style.transform='scale(1)'; awardPoints(5); awardXP(4); saveStore(); return; }
     el.style.transition='transform 3s linear'; el.style.transform='scale(1.18)'; document.getElementById('breathStatus').innerText='Inhale'; 
     setTimeout(()=>{ el.style.transition='transform 2s linear'; el.style.transform='scale(1.25)'; document.getElementById('breathStatus').innerText='Hold'; },3000);
     setTimeout(()=>{ el.style.transition='transform 4s linear'; el.style.transform='scale(0.85)'; document.getElementById('breathStatus').innerText='Exhale'; },5000);
@@ -763,7 +893,7 @@ document.getElementById('bodyScanStart').addEventListener('click', ()=>{
   ];
   let i=0; document.getElementById('bodyScanText').innerText = steps[0];
   const t = setInterval(()=> {
-    i++; if(i>=steps.length){ clearInterval(t); document.getElementById('bodyScanText').innerText='Completed body scan.'; awardPoints(5); saveStore(); return; }
+    i++; if(i>=steps.length){ clearInterval(t); document.getElementById('bodyScanText').innerText='Completed body scan.'; awardPoints(5); awardXP(4); saveStore(); return; }
     document.getElementById('bodyScanText').innerText = steps[i];
   }, 22000);
 });
@@ -787,7 +917,7 @@ document.getElementById('deskStart').addEventListener('click', ()=>{
   ];
   let i=0; document.getElementById('deskStatus').innerText = steps[0];
   deskTimer = setInterval(()=> {
-    i++; if(i>=steps.length){ clearInterval(deskTimer); deskTimer=null; document.getElementById('deskStatus').innerText='Completed routine'; awardPoints(8); saveStore(); return; }
+    i++; if(i>=steps.length){ clearInterval(deskTimer); deskTimer=null; document.getElementById('deskStatus').innerText='Completed routine'; awardPoints(8); awardXP(6); saveStore(); return; }
     document.getElementById('deskStatus').innerText = steps[i];
   }, 30000);
 });
@@ -796,11 +926,11 @@ document.getElementById('deskStop').addEventListener('click', ()=> { clearInterv
 /* Flow */
 document.getElementById('flowStart').addEventListener('click', ()=>{
   document.getElementById('flowStatus').innerText = 'Flow started — follow breathing and gentle movements for 5 min';
-  setTimeout(()=>{ document.getElementById('flowStatus').innerText='Flow ended'; awardPoints(12); saveStore(); }, 300000);
+  setTimeout(()=>{ document.getElementById('flowStatus').innerText='Flow ended'; awardPoints(12); awardXP(10); saveStore(); }, 300000);
 });
 
 /* ---------- EEG upload & simple metrics ---------- */
-let eegData = null;
+let eegData = null; let eegSimInt=null; let eegSimPhase=0;
 document.getElementById('eegFile').addEventListener('change', (ev)=>{
   const f = ev.target.files[0];
   if(!f) return;
@@ -818,6 +948,7 @@ document.getElementById('eegFile').addEventListener('change', (ev)=>{
     if(!parsed.length){ alert('No numeric rows found. Expected CSV with time, amplitude.'); return; }
     eegData = parsed;
     plotEeg(parsed);
+    checkAndAwardBadge('EEGExplorer','EEG Explorer','fa-wave-square');
   };
   r.readAsText(f);
 });
@@ -836,6 +967,53 @@ function plotEeg(parsed){
   document.getElementById('eegMetrics').innerText = `Points: ${vals.length} • Min: ${Math.min(...vals).toFixed(3)} • Max: ${Math.max(...vals).toFixed(3)}`;
 }
 
+function startEegSim(targetCanvasId, onAttention){
+  const canvas = document.getElementById(targetCanvasId); if(!canvas) return;
+  const ctx = canvas.getContext('2d');
+  let t=0; cancelEegSim();
+  eegSimInt = setInterval(()=>{
+    const w = canvas.width, h = canvas.height;
+    canvas.width = canvas.clientWidth; canvas.height = canvas.clientHeight;
+    ctx.clearRect(0,0,w,h);
+    ctx.strokeStyle = '#4f46e5'; ctx.lineWidth=2; ctx.beginPath();
+    const alpha = 0.6+0.4*Math.sin(t/17+eegSimPhase);
+    const beta = 0.6+0.4*Math.cos(t/11+eegSimPhase*0.7);
+    const attn = Math.max(0, Math.min(100, Math.round(60*beta/(alpha+0.2))));
+    for(let x=0;x<w;x++){
+      const y = h/2 + Math.sin((x+t)/14)*14*alpha + Math.sin((x+t)/6)*6*beta + (Math.random()-0.5)*2;
+      if(x===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+    }
+    ctx.stroke();
+    if(onAttention) onAttention(attn);
+    t+=3;
+  }, 60);
+}
+function cancelEegSim(){ if(eegSimInt) clearInterval(eegSimInt); eegSimInt=null; }
+
+function glowBrain(svgId, level){
+  const el = document.getElementById(svgId); if(!el) return;
+  const path = el.querySelector('path');
+  const op = Math.max(0.2, Math.min(0.85, level/120));
+  path.style.filter = `drop-shadow(0 0 ${Math.round(level/6)}px rgba(79,70,229,${op}))`;
+}
+
+// Dashboard EEG sim controls
+const eegSimStartBtn = document.getElementById('eegSimStart');
+const eegSimStopBtn = document.getElementById('eegSimStop');
+if(eegSimStartBtn){
+  eegSimStartBtn.addEventListener('click', ()=>{
+    startEegSim('eegSim', (attn)=>{ document.getElementById('attnLabel').innerText = 'Attention: '+attn+'%'; glowBrain('brainSvg', attn); document.getElementById('nfStatus').innerText = 'Attention: '+attn+'%'; glowBrain('brainSvg2', attn); });
+    checkAndAwardBadge('EEGSimRun','EEG Simulation','fa-bolt');
+  });
+  eegSimStopBtn.addEventListener('click', ()=>{ cancelEegSim(); document.getElementById('attnLabel').innerText = 'Attention: -'; });
+}
+
+// EEG tab sim controls reuse
+const eegSimStartBtn2 = document.getElementById('eegSimStart2');
+const eegSimStopBtn2 = document.getElementById('eegSimStop2');
+if(eegSimStartBtn2){ eegSimStartBtn2.addEventListener('click', ()=>{ startEegSim('eegPlot', (attn)=>{ document.getElementById('nfStatus').innerText = 'Attention: '+attn+'%'; glowBrain('brainSvg2', attn); }); }); }
+if(eegSimStopBtn2){ eegSimStopBtn2.addEventListener('click', ()=>{ cancelEegSim(); document.getElementById('nfStatus').innerText='Attention: -'; }); }
+
 document.getElementById('computeEeg').addEventListener('click', ()=>{
   if(!eegData) return alert('Upload EEG CSV first.');
   const vals = eegData.map(p=>p.v);
@@ -846,17 +1024,59 @@ document.getElementById('computeEeg').addEventListener('click', ()=>{
 });
 
 /* ---------- Points & awards ---------- */
-function awardPoints(p){
-  store.points = (store.points || 0) + Math.round(p);
-  saveStore();
+function awardPoints(p){ store.points = (store.points || 0) + Math.round(p); saveStore(); }
+
+/* ---------- AI Feedback & Coach ---------- */
+function updateAIFeedback(){
+  const el = document.getElementById('aiFeedback');
+  const last = store.entries[store.entries.length-1];
+  const bestRT = store.games.reactionBest || null;
+  let msg = [];
+  if(last){
+    if(last.focus>=8 && last.memory>=7) msg.push('Your focus is high today — try advanced exercises.');
+    if(last.sleep<6) msg.push('Short sleep detected — schedule lighter tasks and a 2-min breathing break.');
+    if(last.mood<=3) msg.push('Mood is low — a short walk and gentle breathing may help.');
+  }
+  if(bestRT && bestRT<300) msg.push('Great reaction times — consider adding more memory drills.');
+  const mm = store.metrics.memoryMatch.slice(-1)[0]; if(mm && mm.acc>=85) msg.push('Strong memory accuracy — level up to harder patterns.');
+  if(!msg.length) msg.push('Complete a check-in or game to unlock personalized insights.');
+  el.innerText = 'AI Feedback: ' + msg.join(' ');
+}
+
+const coachLog = document.getElementById('coachLog');
+function coachSay(text){ const d=document.createElement('div'); d.className='coach-msg'; d.innerText='Coach: '+text; coachLog.appendChild(d); coachLog.scrollTop=coachLog.scrollHeight; }
+function coachUser(text){ const d=document.createElement('div'); d.className='coach-msg me'; d.innerText=text; coachLog.appendChild(d); coachLog.scrollTop=coachLog.scrollHeight; }
+function coachReply(q){
+  const last = store.entries[store.entries.length-1];
+  const avg = (k)=>{ const arr=store.entries.map(e=>e[k]||0); return arr.length? Math.round(arr.reduce((a,b)=>a+b,0)/arr.length):0; };
+  let ans='';
+  if(/focus/i.test(q)) ans = `Your avg focus is ${avg('focus')}/10. Try a 2-min breathing before deep work.`;
+  else if(/memory/i.test(q)) ans = `Your avg memory is ${avg('memory')}/10. Short recall games can boost it.`;
+  else if(/schedule|time/i.test(q)) ans = suggestBestTime();
+  else if(/sleep/i.test(q)) ans = `Avg sleep ${avg('sleep')}h. Target 7–9h.`;
+  else ans = last? `Latest: mood ${last.mood}, mem ${last.memory}, focus ${last.focus}. Keep consistent!` : 'Log a check-in to personalize advice.';
+  coachSay(ans);
+}
+
+document.getElementById('coachSend').addEventListener('click', ()=>{ const txt=document.getElementById('coachText').value.trim(); if(!txt) return; document.getElementById('coachText').value=''; coachUser(txt); setTimeout(()=> coachReply(txt), 300); });
+
+/* ---------- Personalized Scheduling ---------- */
+function suggestBestTime(){
+  const buckets = {morning:[], midday:[], evening:[]};
+  for(const e of store.entries){ const t=(e.time||'08:00'); const h=parseInt(t.split(':')[0],10); const k = h<12? 'morning' : (h<17? 'midday':'evening'); buckets[k].push((e.focus||0)+(e.memory||0)); }
+  const avg = k=> buckets[k].length? Math.round(buckets[k].reduce((a,b)=>a+b,0)/buckets[k].length):0;
+  const scores = Object.entries({morning:avg('morning'), midday:avg('midday'), evening:avg('evening')});
+  scores.sort((a,b)=>b[1]-a[1]);
+  if(!scores.length || scores[0][1]===0) return 'Collect a few check-ins with time to suggest optimal study times.';
+  return `Best window: ${scores[0][0]} (score ${scores[0][1]}). Try scheduling study blocks then.`;
 }
 
 /* ---------- Export / Import ---------- */
 document.getElementById('exportCsvBtn').addEventListener('click', exportCSV);
 document.getElementById('exportSessionCSV').addEventListener('click', exportCSV);
 function exportCSV(){
-  const rows = [['id','date','mood','sleep','memory','focus','notes','games']];
-  for(const e of store.entries) rows.push([e.id,e.date,e.mood,e.sleep,e.memory,e.focus,e.notes, JSON.stringify(e.games||{})]);
+  const rows = [['id','date','time','mood','sleep','memory','focus','notes','games']];
+  for(const e of store.entries) rows.push([e.id,e.date,e.time||'',e.mood,e.sleep,e.memory,e.focus,e.notes, JSON.stringify(e.games||{})]);
   const csv = rows.map(r=>r.map(c=>`"${String(c||'')}"`).join(',')).join('\n');
   const blob = new Blob([csv],{type:'text/csv'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='neuroassess_entries.csv'; a.click();
 }
@@ -875,8 +1095,8 @@ document.getElementById('exportPdfBtn').addEventListener('click', async ()=>{
   if(!store.entries.length){ doc.text('No entries logged.', margin, y); doc.save('neuro_report.pdf'); return; }
   const latest = store.entries[store.entries.length-1];
   doc.setFontSize(12); doc.text('Latest check-in:', margin, y); y+=14;
-  doc.setFontSize(10); doc.text(`${latest.date} • mood ${latest.mood} • memory ${latest.memory} • focus ${latest.focus} • sleep ${latest.sleep}`, margin, y); y+=14;
-  doc.text('Points: ' + store.points + ' • Streak: ' + store.streak, margin, y); y+=18;
+  doc.setFontSize(10); doc.text(`${latest.date} ${latest.time||''} • mood ${latest.mood} • memory ${latest.memory} • focus ${latest.focus} • sleep ${latest.sleep}`, margin, y); y+=14;
+  doc.text('Points: ' + store.points + ' • Streak: ' + store.streak + ' • Level: '+store.level+' ('+store.xp+' XP)', margin, y); y+=18;
   doc.text('7-day averages:', margin, y); y+=12;
   const last7 = store.entries.slice(-7);
   if(last7.length){
@@ -915,9 +1135,8 @@ function shuffle(a){ return a.sort(()=>Math.random()-0.5); }
 document.addEventListener('DOMContentLoaded', ()=>{
   setupBoard();
   newScramble();
-  // populate date
   document.getElementById('ciDate').value = new Date().toISOString().slice(0,10);
-  // render charts
+  document.getElementById('ciTime').value = new Date().toTimeString().slice(0,5);
   updateUI();
 });
 
