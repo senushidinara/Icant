@@ -1360,6 +1360,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
   s('btnHint', ()=>{ updateAIFeedback(); const t=document.getElementById('aiFeedback'); notify(t? t.innerText.replace('AI Feedback: ','AI: '):'AI hint'); });
   s('btnSpeak', ()=>{ try{ const t=document.getElementById('aiFeedback'); const u=new SpeechSynthesisUtterance((t?t.innerText:'AI hint').replace('AI Feedback:','')); u.rate=1; u.pitch=1; speechSynthesis.cancel(); speechSynthesis.speak(u);}catch(e){notify('Speech not supported');} });
   s('btnSettings', ()=>{ switchTab('settings'); });
+  try{ initPlotlyEEG(); initThreeBrain(); startPlotlySim(); }catch(_){ }
   updateUI();
 });
 
