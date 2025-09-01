@@ -87,6 +87,11 @@ button.btn{background:linear-gradient(90deg,var(--accent),var(--accent2));border
   .content-gap{margin-top:8px}
   .lottie-overlay{position:absolute;inset:0;pointer-events:none;opacity:0;transition:opacity .3s ease}
   .toggle-row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+/* debug panel */
+.debug-panel{position:fixed;left:16px;bottom:16px;z-index:100;max-width:360px;width:90vw;display:none}
+.debug-panel.show{display:block}
+.debug-body{max-height:280px;overflow:auto;border:1px solid rgba(255,255,255,0.04);border-radius:8px;padding:8px;background:rgba(255,255,255,0.02);font-size:12px;line-height:1.5}
+.debug-actions{display:flex;gap:8px;margin-top:8px}
 </style>
 <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
 <script src="https://unpkg.com/three@0.160.0/build/three.min.js"></script>
@@ -105,6 +110,7 @@ button.btn{background:linear-gradient(90deg,var(--accent),var(--accent2));border
         <button class="ghost" id="themeToggle"><i class="fas fa-adjust"></i> Theme</button>
         <button class="ghost" id="exportCsvBtn"><i class="fas fa-file-csv"></i> Export CSV</button>
         <button class="ghost" id="exportPdfBtn"><i class="fas fa-file-pdf"></i> Export PDF</button>
+        <button class="ghost" id="debugToggle"><i class="fas fa-bug"></i> Debug</button>
       </div>
     </header>
 
@@ -553,6 +559,14 @@ button.btn{background:linear-gradient(90deg,var(--accent),var(--accent2));border
     <footer>© 2025 NeuroAssess Pro — client-side cognitive toolkit. Deploy `index.html` to Netlify as your site root.</footer>
   </div>
 
+<div class="debug-panel card" id="debugPanel">
+  <div class="h2">Debug Console</div>
+  <div class="debug-body" id="debugDump">No data</div>
+  <div class="debug-actions">
+    <button class="btn" id="debugCopy">Copy</button>
+    <button class="ghost" id="debugClear">Clear</button>
+  </div>
+</div>
 <div class="notify" id="notify"></div>
 
 <script>
@@ -579,6 +593,11 @@ let store = {
 loadStore();
 
 /* ---------- Helpers ---------- */
+/* Debug helpers */
+let __DBG_VISIBLE=false, __DBG_LOG=[]; let __DBG_INT=null;
+function logDbg(msg, extra){ try{ const t=new Date().toISOString().split('T')[1].replace('Z',''); const entry={t, msg:String(msg||''), extra: extra!==undefined? extra:null}; __DBG_LOG.push(entry); if(__DBG_LOG.length>120) __DBG_LOG.shift(); if(__DBG_VISIBLE) renderDebugPanel(); }catch(_){} }
+function renderDebugPanel(){ try{ const dump=document.getElementById('debugDump'); if(!dump) return; const activeTab=document.querySelector('nav.side .tab.active'); const attnEl=document.getElementById('attnLabel'); const m=attnEl && /([0-9]+)%/.exec(attnEl.innerText); const attn= m? m[1] : '-'; const data={ stage: (typeof currentStage!=='undefined'? currentStage : '-'), simTime:(typeof simTime!=='undefined'? (Number(simTime)||0).toFixed? Number(simTime).toFixed(2):simTime:'-'), simSpeed:(typeof simSpeed!=='undefined'? simSpeed:'-'), waveLive:(typeof waveLive!=='undefined'? waveLive : {}), neurotransmitters:(typeof lastNT!=='undefined'? lastNT : {}), plotlyReady:(typeof plotlyReady!=='undefined'? plotlyReady:false), threeReady: !!(typeof threeScene!=='undefined' && threeScene), p5Ready: !!window.p5, attn: attn, activeTab: activeTab? activeTab.getAttribute('data-tab'):'-', points: store.points, level: store.level, xp: store.xp, entries: store.entries.length, log: __DBG_LOG.slice(-20)}; dump.textContent = JSON.stringify(data,null,2); }catch(e){ const dump=document.getElementById('debugDump'); if(dump) dump.textContent='Debug render error: '+e.message; } }
+function setDebugVisible(v){ __DBG_VISIBLE=!!v; const panel=document.getElementById('debugPanel'); if(panel) panel.classList.toggle('show', __DBG_VISIBLE); if(__DBG_VISIBLE){ renderDebugPanel(); clearInterval(__DBG_INT); __DBG_INT=setInterval(renderDebugPanel, 800); } else { clearInterval(__DBG_INT); } }
 function saveStore(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(store)); updateUI(); }
 function loadStore(){ const s = localStorage.getItem(STORAGE_KEY); if(s) store = {...store, ...JSON.parse(s)}; migrateStore(); updateUI(); }
 function uid(n=6){ return Date.now().toString().slice(-5)+'-'+Math.random().toString(36).slice(2,n+2); }
@@ -1165,11 +1184,10 @@ let lastNT={da:50,se:40,ach:30};
 let ntParticles={da:[],se:[],ach:[]};
 let ambientFadeInt=null;
 function initPlotlyEEG(){ try{ if(plotlyReady) return; if(!window.Plotly) return; const w=document.getElementById('eegChart'); const b=document.getElementById('ntBar'); if(!w||!b) return; Plotly.newPlot(w,[{x:[],y:[],mode:'lines',name:'Delta',line:{color:'#4f46e5',width:2}},{x:[],y:[],mode:'lines',name:'Theta',line:{color:'#22d3ee',width:2}},{x:[],y:[],mode:'lines',name:'Alpha',line:{color:'#a78bfa',width:2}},{x:[],y:[],mode:'lines',name:'Beta',line:{color:'#fbbf24',width:2}}],{title:'Simulated EEG Waves',paper_bgcolor:'rgba(0,0,0,0)',plot_bgcolor:'rgba(255,255,255,0.02)',margin:{l:40,r:10,t:30,b:30},xaxis:{title:'Time (s)'},yaxis:{title:'Amplitude (μV)'},showlegend:true,hovermode:'x unified'},{displayModeBar:false});
-  // Gamified click on peaks
-  if(w && w.on){ w.on('plotly_click', (ev)=>{ try{ const y=ev.points && ev.points[0] && ev.points[0].y; if(typeof y==='number' && y>8){ awardPoints(5); awardXP(3); notify('Peak clicked +5 pts'); } }catch(_){} }); }
-  Plotly.newPlot(b,[{x:['Dopamine','Serotonin','Acetylcholine'],y:[50,40,30],type:'bar',marker:{color:['#10b981','#22d3ee','#fbbf24']}}],{title:'Neurotransmitters',paper_bgcolor:'rgba(0,0,0,0)',plot_bgcolor:'rgba(255,255,255,0.02)',margin:{l:40,r:10,t:30,b:30},yaxis:{range:[0,100]}},{displayModeBar:false}); plotlyReady=true; }catch(_){}}
+  if(w && w.on){ w.on('plotly_click', (ev)=>{ try{ const y=ev.points && ev.points[0] && ev.points[0].y; if(typeof y==='number' && y>8){ awardPoints(5); awardXP(3); notify('Peak clicked +5 pts'); logDbg('PeakClick', y); } }catch(_){} }); }
+  Plotly.newPlot(b,[{x:['Dopamine','Serotonin','Acetylcholine'],y:[50,40,30],type:'bar',marker:{color:['#10b981','#22d3ee','#fbbf24']}}],{title:'Neurotransmitters',paper_bgcolor:'rgba(0,0,0,0)',plot_bgcolor:'rgba(255,255,255,0.02)',margin:{l:40,r:10,t:30,b:30},yaxis:{range:[0,100]}},{displayModeBar:false}); plotlyReady=true; logDbg('PlotlyInit',{waves:true,bars:true}); }catch(e){ logDbg('PlotlyInitError', e && e.message); }}
 function fadeAudioTo(targetVol=0.2, durMs=800){ try{ const a=document.getElementById('soundscape'); if(!a) return; const start=a.volume; const steps=Math.max(1,Math.round(durMs/50)); let i=0; clearInterval(ambientFadeInt); ambientFadeInt=setInterval(()=>{ i++; a.volume = start + (targetVol-start)*(i/steps); if(i>=steps){ clearInterval(ambientFadeInt); } }, 50); }catch(_){} }
-function setStage(stage){ if(currentStage===stage) return; currentStage=stage; const lab=document.getElementById('stageLabel'); if(lab) lab.innerText='Stage: '+stage; const el=document.getElementById('eegChart'); if(el && window.Plotly){ const bg = stage==='REM' ? 'rgba(88,28,135,0.18)' : 'rgba(15,23,42,0.14)'; Plotly.relayout(el,{plot_bgcolor:bg}); }
+function setStage(stage){ if(currentStage===stage) return; currentStage=stage; logDbg('StageChange',stage); const lab=document.getElementById('stageLabel'); if(lab) lab.innerText='Stage: '+stage; const el=document.getElementById('eegChart'); if(el && window.Plotly){ const bg = stage==='REM' ? 'rgba(88,28,135,0.18)' : 'rgba(15,23,42,0.14)'; Plotly.relayout(el,{plot_bgcolor:bg}); }
   if(stage==='REM'){ triggerDreamEffect(); fadeAudioTo(0.05, 600); }
   else { fadeAudioTo(0.3, 600); }
 }
@@ -1191,7 +1209,7 @@ if(THREE.OrbitControls){ threeControls=new THREE.OrbitControls(cam, renderer.dom
     ntParticles.se.forEach(p=>{ p.scale.setScalar(scalePulse(lastNT.se,0.5)); });
     ntParticles.ach.forEach(p=>{ p.scale.setScalar(scalePulse(lastNT.ach,0.5)); });
   }catch(_){ }
-  renderer.render(scene, cam); })(); }catch(_){}}
+  renderer.render(scene, cam); })(); logDbg('ThreeInit', {w,h}); }catch(e){ logDbg('ThreeInitError', e && e.message); }}
 function updateThreeGlow(){ try{ if(!threeLobes) return; const d=clamp(waveLive.delta/14,0.05,2.0); const t=clamp(waveLive.theta/10,0.05,2.0); const b=clamp(waveLive.beta/6,0.05,2.0); threeLobes.frontal.material.emissiveIntensity=d; threeLobes.temporal.material.emissiveIntensity=t; threeLobes.prefrontal.material.emissiveIntensity=b; }catch(_){}}
 function spawnDream(n){ try{ if(!threeScene) return; for(let i=0;i<n;i++){ const g=new THREE.SphereGeometry(0.05,12,10); const m=new THREE.MeshStandardMaterial({color:0xffffff,emissive:0x9f7aea,emissiveIntensity:1,transparent:true,opacity:0.9}); const p=new THREE.Mesh(g,m); p.position.set((Math.random()-0.5)*1.2,(Math.random()-0.5)*1.0,(Math.random()*1.2+0.3)); const dx=(Math.random()-0.5)*0.02, dy=(Math.random()-0.5)*0.02, dz=(Math.random()-0.5)*0.02; let life=60; threeScene.add(p); (function tick(){ life--; p.position.x+=dx; p.position.y+=dy; p.position.z+=dz; p.material.opacity*=0.96; if(life>0) requestAnimationFrame(tick); else { threeScene.remove(p); p.geometry.dispose(); p.material.dispose(); } })(); } }catch(_){}}
 function initLottie(){ try{ if(lottieAnim || !window.lottie) return; const el=document.getElementById('dreamLottie'); if(!el) return; lottieAnim = lottie.loadAnimation({container:el,renderer:'svg',loop:false,autoplay:false,path:'https://assets6.lottiefiles.com/packages/lf20_9wpyhdzo.json'}); }catch(_){}}
@@ -1354,6 +1372,13 @@ document.addEventListener('DOMContentLoaded', ()=>{
   document.getElementById('ciTime').value = new Date().toTimeString().slice(0,5);
   const loadEl = document.getElementById('simLoad'); if(loadEl){ loadEl.addEventListener('input', ()=>{ eegSimLoad = parseInt(loadEl.value,10)||60; }); }
   const s = (id,fn)=>{ const el=document.getElementById(id); if(el) el.addEventListener('click', fn); };
+  // Debug
+  const dbg=document.getElementById('debugToggle'); if(dbg){ dbg.addEventListener('click', ()=> setDebugVisible(!__DBG_VISIBLE)); }
+  document.addEventListener('keydown', (e)=>{ if(e.key==='d' && (e.ctrlKey||e.metaKey)){ e.preventDefault(); setDebugVisible(!__DBG_VISIBLE); } });
+  document.addEventListener('click', (e)=>{ const q=(sel)=> e.target.closest && e.target.closest(sel); if(q('#eegSimStart')||q('#eegSimStart2')) logDbg('EEGSimStart'); if(q('#eegSimStop')||q('#eegSimStop2')) logDbg('EEGSimStop'); if(q('#nightStart')) logDbg('NightStart'); if(q('#nightStop')) logDbg('NightStop'); }, true);
+  const dcopy=document.getElementById('debugCopy'); if(dcopy){ dcopy.addEventListener('click', ()=>{ try{ navigator.clipboard.writeText(document.getElementById('debugDump').textContent||''); notify('Debug copied'); }catch(_){ } }); }
+  const dclear=document.getElementById('debugClear'); if(dclear){ dclear.addEventListener('click', ()=>{ __DBG_LOG=[]; renderDebugPanel(); }); }
+  if(location.search.includes('debug=1') || location.hash.includes('#debug')) setDebugVisible(true);
   s('btnDailyStart', ()=>{ switchTab('games'); newScramble(); notify('Daily task started'); });
   s('btnPerf', ()=>{ switchTab('progress'); notify('Opening performance summary'); });
   s('btnBrain', ()=>{ switchTab('eeg'); setTimeout(()=>{ const btn=document.getElementById('eegSimStart2'); if(btn) btn.click(); }, 50); });
@@ -1364,7 +1389,8 @@ document.addEventListener('DOMContentLoaded', ()=>{
   updateUI();
 });
 
-window.addEventListener('error', (e)=>{ const n=document.getElementById('notify'); if(n){ n.innerText='Error: '+e.message; n.classList.add('show'); setTimeout(()=> n.classList.remove('show'), 3000); } });
+window.addEventListener('error', (e)=>{ const n=document.getElementById('notify'); if(n){ n.innerText='Error: '+e.message; n.classList.add('show'); setTimeout(()=> n.classList.remove('show'), 3000); } logDbg('window.error', e && e.message); });
+window.addEventListener('unhandledrejection', (e)=>{ const n=document.getElementById('notify'); const msg=(e && e.reason && e.reason.message)? e.reason.message : String(e && e.reason || ''); if(n){ n.innerText='Unhandled: '+msg; n.classList.add('show'); setTimeout(()=> n.classList.remove('show'), 3000); } logDbg('unhandledrejection', msg); });
 
 /* Save periodically */
 setInterval(()=> saveStore(), 5000);
