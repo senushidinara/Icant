@@ -560,6 +560,7 @@ document.addEventListener('keydown', (ev)=>{
 function switchTab(id){
   document.querySelectorAll('nav.side .tab').forEach(t=>t.classList.toggle('active', t.getAttribute('data-tab')===id));
   document.querySelectorAll('#mainArea > section').forEach(s=> s.style.display = (s.id===id ? 'block' : 'none'));
+  if(window.gsap){ try{ gsap.fromTo('#'+id,{opacity:0,y:8},{opacity:1,y:0,duration:0.4,ease:'power2.out'}); }catch(_){} }
 }
 
 /* ---------- Update UI ---------- */
