@@ -6,40 +6,47 @@
 <title>NeuroAssess Pro — Cognitive Suite</title>
 
 <!-- External libs -->
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/p5@1.9.0/lib/p5.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/typed.js@2.0.12"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
 
 <style>
   /* ---------- Theme & layout ---------- */
   :root{
-    --bg1:#071129; --bg2:#0f1724; --card:rgba(255,255,255,0.03);
-    --muted:#9aa4b2; --accent:#4f46e5; --accent2:#06b6d4; --good:#0ea5a4;
+    --bg1:#111827; --bg2:#0b1220; --card:rgba(255,255,255,0.03);
+    --muted:#a7b3c4; --accent:#4F46E5; --accent2:#22D3EE; --accent3:#FBBF24; --good:#10b981;
     --glass: rgba(255,255,255,0.03);
   }
-  *{box-sizing:border-box;margin:0;padding:0;font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial;}
-  body{min-height:100vh;background:linear-gradient(135deg,var(--bg1),var(--bg2));color:#e6eef8;padding:18px}
-  .wrap{max-width:1300px;margin:0 auto;display:grid;grid-template-columns:260px 1fr 360px;gap:18px}
-  header{grid-column:1/-1;display:flex;align-items:center;gap:12px;padding:14px;border-radius:14px;background:linear-gradient(90deg,rgba(255,255,255,0.02),rgba(255,255,255,0.01));border:1px solid rgba(255,255,255,0.03)}
+  *{box-sizing:border-box;margin:0;padding:0;font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial;} .h2, .brand{font-family:Poppins,Inter,system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial;}
+  body{min-height:100vh;background:linear-gradient(135deg,var(--bg1),var(--bg2));color:#e6eef8;padding:24px;line-height:1.75;font-size:20px}
+  .wrap{max-width:1300px;margin:0 auto;display:grid;grid-template-columns:260px 1fr 360px;gap:24px}
+  header{grid-column:1/-1;display:flex;align-items:center;gap:12px;padding:16px;border-radius:14px;background:linear-gradient(90deg,rgba(255,255,255,0.02),rgba(255,255,255,0.01));border:1px solid rgba(255,255,255,0.03)}
   .brand{font-weight:800;font-size:1.2rem;background:linear-gradient(90deg,var(--accent),var(--accent2));-webkit-background-clip:text;background-clip:text;color:transparent}
   .subtitle{color:var(--muted);font-size:0.95rem}
-  nav.side{background:var(--card);padding:12px;border-radius:12px;border:1px solid rgba(255,255,255,0.03);height:calc(100vh - 120px);overflow:auto}
-  nav.side .tab{display:flex;gap:10px;align-items:center;padding:10px;border-radius:10px;cursor:pointer;margin-bottom:6px;color:var(--muted)}
+  nav.side{background:var(--card);padding:16px;border-radius:14px;border:1px solid rgba(255,255,255,0.03);height:calc(100vh - 120px);overflow:auto}
+  nav.side .tab{display:flex;gap:12px;align-items:center;padding:14px 16px;border-radius:12px;cursor:pointer;margin-bottom:10px;color:var(--muted);font-size:1.05rem}
   nav.side .tab.active{background:linear-gradient(90deg, rgba(79,70,229,0.14), rgba(6,182,212,0.06));color:#fff;box-shadow:0 6px 18px rgba(79,70,229,0.06)}
-  .main{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));padding:18px;border-radius:12px;border:1px solid rgba(255,255,255,0.03);min-height:70vh;overflow:auto}
-  .right{background:var(--card);padding:12px;border-radius:12px;border:1px solid rgba(255,255,255,0.03);height:calc(100vh - 120px);overflow:auto}
-  .row{display:flex;gap:12px;align-items:center}
-  .h2{font-size:1.1rem;color:var(--accent);margin-bottom:10px}
-  .muted{color:var(--muted);font-size:0.9rem}
-  button.btn{background:linear-gradient(90deg,var(--accent),var(--accent2));border:none;color:white;padding:10px 12px;border-radius:10px;cursor:pointer;display:inline-flex;gap:8px;align-items:center}
-  button.ghost{background:transparent;border:1px solid rgba(255,255,255,0.04);color:#e6eef8;padding:8px 10px;border-radius:8px;cursor:pointer}
+  .main{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));padding:22px;border-radius:14px;border:1px solid rgba(255,255,255,0.03);min-height:70vh;overflow:auto}
+  .right{background:var(--card);padding:16px;border-radius:14px;border:1px solid rgba(255,255,255,0.03);height:calc(100vh - 120px);overflow:auto}
+  .row{display:flex;gap:14px;align-items:center}
+  .h2{font-size:1.4rem;color:var(--accent);margin-bottom:14px;font-weight:800}
+  .muted{color:var(--muted);font-size:1rem;line-height:1.6}
+  button.btn:hover{transform:translateY(-1px);box-shadow:0 12px 28px rgba(124,77,255,.28)}
+button.ghost:hover{transform:translateY(-1px);box-shadow:0 10px 24px rgba(0,0,0,.18)}
+.card:hover{transform:translateY(-2px);box-shadow:0 16px 36px rgba(0,0,0,.28)}
+button.btn{background:linear-gradient(90deg,var(--accent),var(--accent2));border:none;color:white;padding:12px 16px;border-radius:12px;cursor:pointer;display:inline-flex;gap:8px;align-items:center;transition:transform .15s ease, box-shadow .2s ease;box-shadow:0 6px 18px rgba(0,0,0,.18)}
+  button.ghost{background:transparent;border:1px solid rgba(255,255,255,0.06);color:#e6eef8;padding:10px 14px;border-radius:10px;cursor:pointer;transition:transform .15s ease, box-shadow .2s ease}
   input,select,textarea{background:transparent;border:1px solid rgba(255,255,255,0.04);padding:10px;border-radius:8px;color:var(--muted);width:100%}
-  .card{background:linear-gradient(180deg, rgba(255,255,255,0.015), rgba(255,255,255,0.01));padding:12px;border-radius:10px;border:1px solid rgba(255,255,255,0.02)}
-  .games-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px}
+  .card{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));padding:16px;border-radius:14px;border:1px solid rgba(255,255,255,0.03);box-shadow:0 10px 28px rgba(0,0,0,0.22);backdrop-filter:blur(8px);transition:transform .18s ease, box-shadow .2s ease}
+  .games-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px}
   .game{padding:10px;border-radius:10px;background:linear-gradient(90deg, rgba(255,255,255,0.01), rgba(255,255,255,0.02));border:1px solid rgba(255,255,255,0.02);text-align:center}
-  .big-count{font-size:2rem;font-weight:800;color:var(--accent)}
-  .progress{height:8px;background:rgba(255,255,255,0.02);border-radius:6px;overflow:hidden}
-  .progress > i{display:block;height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));width:0%}
+  .big-count{font-size:2.2rem;font-weight:800;color:var(--accent)}
+  .progress{height:10px;background:rgba(255,255,255,0.02);border-radius:6px;overflow:hidden}
+  .progress > i{display:block;height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2),var(--accent3));width:0%;transition:width .4s ease}
   footer{grid-column:1/-1;margin-top:18px;color:var(--muted);text-align:center;font-size:0.9rem}
   /* animations */
   .pulse{animation:pulse 2.5s ease-in-out infinite}
@@ -48,7 +55,40 @@
   @keyframes fadeIn {from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
   /* responsive */
   @media (max-width:1100px){ .wrap{grid-template-columns:1fr; } nav.side{height:auto} .right{height:auto} }
+
+  /* New classes for added UI (keep blue/rounded theme) */
+  .header-right{margin-left:auto;display:flex;gap:8px;align-items:center}
+  .level-box{min-width:220px;text-align:center}
+  .level-title{color:var(--muted)}
+  .level-progress{margin-top:6px}
+  .badge-bar{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+  .badge-chip{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border-radius:999px;background:linear-gradient(90deg, rgba(79,70,229,0.22), rgba(34,211,238,0.18), rgba(251,191,36,0.16));border:1px solid rgba(255,255,255,0.06);font-size:0.95rem}
+  .ai-panel{margin-top:12px}
+  .ai-bubble{padding:12px;border-radius:12px;background:linear-gradient(90deg, rgba(124,77,255,0.14), rgba(0,229,255,0.1));border:1px solid rgba(255,255,255,0.05);animation:fadeIn .45s ease}
+  .mini-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .brain-wrap{display:flex;align-items:center;justify-content:center}
+  .brain-svg{width:100%;max-width:260px}
+  .coach-wrap{display:flex;flex-direction:column;gap:8px}
+  .coach-log{height:180px;overflow:auto;border:1px solid rgba(255,255,255,0.04);border-radius:8px;padding:8px;background:rgba(255,255,255,0.02)}
+  .coach-msg{margin:6px 0}
+  .coach-msg.me{text-align:right}
+  .coach-input{display:flex;gap:8px}
+  .notify{position:fixed;right:16px;bottom:16px;padding:10px 12px;border-radius:10px;background:linear-gradient(90deg, rgba(79,70,229,0.9), rgba(6,182,212,0.9));color:#fff;box-shadow:0 8px 24px rgba(0,0,0,0.2);transform:translateY(120%);opacity:0;transition:all 0.35s ease;z-index:99}
+  .notify.show{transform:translateY(0);opacity:1}
+  /* Added for Plotly/Three integration */
+  .grid-two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  @media (max-width:1100px){ .grid-two{grid-template-columns:1fr} }
+  .chart-box{height:260px}
+  .chart-tall{height:320px}
+  .control-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:8px}
+  .stage-chip{display:inline-flex;align-items:center;gap:6px;padding:4px 8px;border-radius:999px;border:1px solid rgba(255,255,255,0.06);background:rgba(255,255,255,0.04);font-size:0.9rem}
+  .three-wrap{height:300px}
+  .region-info{margin-top:6px;color:var(--muted)}
+  .content-gap{margin-top:8px}
 </style>
+<script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+<script src="https://unpkg.com/three@0.160.0/build/three.min.js"></script>
+<script src="https://unpkg.com/three@0.160.0/examples/js/controls/OrbitControls.js"></script>
 </head>
 <body>
   <div class="wrap">
@@ -57,7 +97,7 @@
         <div class="brand">NEUROASSESS PRO</div>
         <div class="subtitle">Personalized cognitive toolkit — truthful results only</div>
       </div>
-      <div style="margin-left:auto;display:flex;gap:8px;align-items:center">
+      <div class="header-right">
         <button class="ghost" id="themeToggle"><i class="fas fa-adjust"></i> Theme</button>
         <button class="ghost" id="exportCsvBtn"><i class="fas fa-file-csv"></i> Export CSV</button>
         <button class="ghost" id="exportPdfBtn"><i class="fas fa-file-pdf"></i> Export PDF</button>
@@ -88,6 +128,12 @@
             <div class="muted">Real scores derived from your entries & game performance</div>
           </div>
           <div style="display:flex;gap:8px;align-items:center">
+            <div class="card level-box">
+              <div class="level-title">Level <span id="levelNum">1</span></div>
+              <div class="big-count" id="xpNum">0 XP</div>
+              <div class="progress level-progress"><i id="xpBar" style="width:0%"></i></div>
+              <div class="muted" id="xpHint">0 / 100</div>
+            </div>
             <div class="card" style="min-width:220px;text-align:center">
               <div class="muted">Brain Points</div>
               <div id="points" class="big-count">0</div>
@@ -98,6 +144,23 @@
               <div id="streak" class="big-count">0</div>
               <div class="muted">Daily active days</div>
             </div>
+          </div>
+        </div>
+
+        <div style="margin-top:12px" class="ai-panel">
+          <div class="ai-bubble" id="aiFeedback">AI Feedback: Complete a check-in or game to see insights here.</div>
+          <div class="badge-bar" id="badgeBar"></div>
+        </div>
+
+        <div class="card" style="margin-top:12px">
+          <div class="h2">Quick Actions</div>
+          <div style="display:flex;flex-wrap:wrap;gap:10px">
+            <button class="btn" id="btnDailyStart" title="Open daily tasks and start a quick exercise">Start Daily Task</button>
+            <button class="ghost" id="btnPerf" title="View performance charts and trends">Performance Summary</button>
+            <button class="ghost" id="btnBrain" title="Open EEG and start simulation">Brain Visualization</button>
+            <button class="ghost" id="btnHint" title="See an AI tip based on your recent data">Show Hint</button>
+            <button class="ghost" id="btnSpeak" title="Speak current AI hint">Speak Hint</button>
+            <button class="ghost" id="btnSettings" title="Open profile & settings">Profile / Settings</button>
           </div>
         </div>
 
@@ -116,6 +179,57 @@
             </div>
           </div>
         </div>
+        <div class="card" style="margin-top:12px">
+          <div class="h2">Brain Activity (Simulated)</div>
+          <div class="mini-grid">
+            <div>
+              <canvas id="eegSim" height="140"></canvas>
+              <div style="display:flex;gap:8px;margin-top:8px;align-items:center">
+                <button class="btn" id="eegSimStart">Start Simulation</button>
+                <button class="ghost" id="eegSimStop">Stop</button>
+                <label class="muted" style="margin-left:8px">Load</label>
+                <input id="simLoad" type="range" min="0" max="100" value="60" style="width:140px"/>
+              </div>
+              <div class="muted" id="attnLabel" style="margin-top:6px">Attention: -</div>
+            </div>
+            <div class="brain-wrap">
+              <svg class="brain-svg" viewBox="0 0 200 140" id="brainSvg" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                  <linearGradient id="g1" x1="0" x2="1"><stop offset="0" stop-color="#4f46e5" stop-opacity="0.4"/><stop offset="1" stop-color="#06b6d4" stop-opacity="0.4"/></linearGradient>
+                </defs>
+                <path id="brainL" d="M60,30 C30,40 20,70 40,95 C60,120 90,120 100,105 C110,120 140,120 160,95 C180,70 170,40 140,30 C130,15 70,15 60,30 Z" fill="url(#g1)" stroke="rgba(255,255,255,0.15)"/>
+                <g fill="none" stroke="rgba(255,255,255,0.25)">
+                  <path d="M80,40 C70,60 70,80 84,92"/>
+                  <path d="M120,40 C130,60 130,80 116,92"/>
+                </g>
+              </svg>
+            </div>
+          </div>
+        </div>
+        <div class="card" style="margin-top:12px">
+          <div class="h2">EEG Waves & Neurotransmitters (Plotly)</div>
+          <div class="control-row">
+            <span class="stage-chip" id="stageLabel">Stage: NREM</span>
+            <label class="muted">Speed</label>
+            <input id="simSpeed" type="range" min="0.5" max="3" step="0.25" value="1" />
+          </div>
+          <div class="grid-two content-gap">
+            <div class="chart-box" id="eegChart"></div>
+            <div class="chart-box" id="ntBar"></div>
+          </div>
+        </div>
+
+        <div class="card" style="margin-top:12px">
+          <div class="h2">3D Brain Map (p5.js)</div>
+          <div id="brain3d" style="height:260px"></div>
+          <div class="muted" style="margin-top:6px">Real-time glow scales with attention/simulation load</div>
+        </div>
+
+        <div class="card" style="margin-top:12px">
+          <div class="h2">3D Brain Map (Three.js)</div>
+          <div id="brainThree" class="three-wrap"></div>
+          <div id="regionInfo" class="region-info">Click a region to see details.</div>
+        </div>
       </section>
 
       <!-- Check-in -->
@@ -127,6 +241,8 @@
           <div class="card">
             <label>Date</label>
             <input id="ciDate" type="date" />
+            <label style="margin-top:8px">Time</label>
+            <input id="ciTime" type="time" />
             <label style="margin-top:8px">Mood</label>
             <div style="display:flex;gap:8px;align-items:center">
               <input id="ciMood" type="range" min="0" max="10" value="5" />
@@ -305,12 +421,29 @@
               <canvas id="eegPlot" height="160"></canvas>
             </div>
             <div id="eegMetrics" class="muted" style="margin-top:8px"></div>
+            <div style="display:flex;gap:8px;margin-top:8px">
+              <button class="btn" id="eegSimStart2">Start Simulation</button>
+              <button class="ghost" id="eegSimStop2">Stop</button>
+            </div>
           </div>
           <div class="card">
             <div class="h2">Explorer Tools</div>
             <div class="muted">Quick metrics: mean, sd, peak-to-peak, simple band-ish power via FFT (exploratory)</div>
             <button class="btn" id="computeEeg">Compute Metrics</button>
             <div id="eegExpl" class="muted" style="margin-top:8px"></div>
+            <div style="margin-top:12px">
+              <div class="h2">Neurofeedback</div>
+              <div class="muted">Regions glow when simulated attention rises</div>
+              <div class="brain-wrap" style="margin-top:8px">
+                <svg class="brain-svg" viewBox="0 0 200 140" id="brainSvg2" xmlns="http://www.w3.org/2000/svg">
+                  <defs>
+                    <linearGradient id="g2" x1="0" x2="1"><stop offset="0" stop-color="#4f46e5" stop-opacity="0.4"/><stop offset="1" stop-color="#06b6d4" stop-opacity="0.4"/></linearGradient>
+                  </defs>
+                  <path id="brain2" d="M60,30 C30,40 20,70 40,95 C60,120 90,120 100,105 C110,120 140,120 160,95 C180,70 170,40 140,30 C130,15 70,15 60,30 Z" fill="url(#g2)" stroke="rgba(255,255,255,0.15)"/>
+                </svg>
+              </div>
+              <div class="muted" id="nfStatus" style="margin-top:6px">Attention: -</div>
+            </div>
           </div>
         </div>
       </section>
@@ -342,6 +475,8 @@
         <input id="userName" placeholder="Your name" />
         <label style="margin-top:8px">Theme</label>
         <select id="themeSelect"><option value="dark">Dark</option><option value="light">Light</option></select>
+        <label style="margin-top:8px">Difficulty</label>
+        <select id="difficulty"><option value="1">Easy</option><option value="2" selected>Normal</option><option value="3">Hard</option></select>
         <label style="margin-top:8px">Enable Sync (placeholder)</label>
         <select id="enableSync"><option value="off">Off (local only)</option><option value="on">On — configure server</option></select>
         <div style="margin-top:12px;display:flex;gap:8px">
@@ -382,6 +517,18 @@
       </div>
 
       <div class="card" style="margin-top:12px">
+        <div class="h2">Achievements & Coach</div>
+        <div class="badge-bar" id="badgeBarSide"></div>
+        <div class="coach-wrap" style="margin-top:8px">
+          <div class="coach-log" id="coachLog"></div>
+          <div class="coach-input">
+            <input id="coachText" placeholder="Ask the coach..." />
+            <button class="btn" id="coachSend">Send</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:12px">
         <div class="h2">How this app works</div>
         <div class="muted">All computations are local. Charted trends and suggestions derive only from your check-ins and game interactions. EEG upload is exploratory visualization.</div>
       </div>
@@ -389,6 +536,8 @@
 
     <footer>© 2025 NeuroAssess Pro — client-side cognitive toolkit. Deploy `index.html` to Netlify as your site root.</footer>
   </div>
+
+<div class="notify" id="notify"></div>
 
 <script>
 /* ============================
@@ -403,53 +552,83 @@ let store = {
   name: '',
   points: 0,
   streak: 0,
+  xp: 0,
+  level: 1,
+  badges: [],
   entries: [],   // check-ins & associated game results
   games: {},     // aggregated game stats
+  metrics: {reaction: [], scramble: [], memoryMatch: [], nback: []},
   settings: {theme:'dark'}
 };
 loadStore();
 
 /* ---------- Helpers ---------- */
 function saveStore(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(store)); updateUI(); }
-function loadStore(){ const s = localStorage.getItem(STORAGE_KEY); if(s) store = {...store, ...JSON.parse(s)}; updateUI(); }
+function loadStore(){ const s = localStorage.getItem(STORAGE_KEY); if(s) store = {...store, ...JSON.parse(s)}; migrateStore(); updateUI(); }
 function uid(n=6){ return Date.now().toString().slice(-5)+'-'+Math.random().toString(36).slice(2,n+2); }
 function clamp(v,min,max){ return Math.max(min,Math.min(max,v)); }
+function notify(msg){ const n=document.getElementById('notify'); n.innerText=msg; n.classList.add('show'); setTimeout(()=> n.classList.remove('show'), 2600); }
+
+/* ---------- Gamification ---------- */
+function xpForLevel(l){ return 100 + (l-1)*50; }
+function awardXP(x){ store.xp = (store.xp||0) + Math.max(0,Math.round(x)); while(store.xp >= xpForLevel(store.level)){ store.xp -= xpForLevel(store.level); store.level++; notify('Level up! You reached level '+store.level); checkAndAwardBadge('LevelUp'+store.level,'Level '+store.level,'fa-star'); } saveStore(); }
+function checkAndAwardBadge(key, label, icon){ if(store.badges.find(b=>b.key===key)) return; const b={key,label,icon,at:new Date().toISOString()}; store.badges.push(b); notify('New badge: '+label); saveStore(); }
+function updateLevelUI(){ document.getElementById('levelNum').innerText = store.level||1; document.getElementById('xpNum').innerText = (store.xp||0)+' XP'; const need = xpForLevel(store.level||1); const pct = Math.min(99, Math.round(((store.xp||0)/need)*100)); document.getElementById('xpBar').style.width = pct+'%'; document.getElementById('xpHint').innerText = (store.xp||0)+' / '+need; const badgeBar = document.getElementById('badgeBar'); const badgeBar2 = document.getElementById('badgeBarSide'); const html = (store.badges||[]).slice(-10).map(b=>`<span class="badge-chip"><i class="fas ${b.icon}"></i>${b.label}</span>`).join(''); badgeBar.innerHTML = html; badgeBar2.innerHTML = html; }
+
+function migrateStore(){ if(!store.xp) store.xp=0; if(!store.level) store.level=1; if(!store.badges) store.badges=[]; if(!store.metrics) store.metrics={reaction:[],scramble:[],memoryMatch:[],nback:[]}; }
 
 /* ---------- UI refs ---------- */
 const tabs = document.querySelectorAll('nav.side .tab');
 const sections = document.querySelectorAll('main .fade-in, main section');
-tabs.forEach(t => t.addEventListener('click', ()=> switchTab(t.getAttribute('data-tab'))));
+try{ tabs.forEach(t=>{ t.setAttribute('role','button'); t.setAttribute('tabindex','0'); }); }catch(_){}
+// Delegated events so clicks always work
+document.addEventListener('click', (ev)=>{
+  const t = ev.target.closest('nav.side .tab');
+  if(t){ switchTab(t.getAttribute('data-tab')); }
+});
+document.addEventListener('keydown', (ev)=>{
+  const t = ev.target.closest && ev.target.closest('nav.side .tab');
+  if(t && (ev.key==='Enter' || ev.key===' ')){ ev.preventDefault(); switchTab(t.getAttribute('data-tab')); }
+});
 function switchTab(id){
-  tabs.forEach(t=>t.classList.toggle('active', t.getAttribute('data-tab')===id));
+  document.querySelectorAll('nav.side .tab').forEach(t=>t.classList.toggle('active', t.getAttribute('data-tab')===id));
   document.querySelectorAll('#mainArea > section').forEach(s=> s.style.display = (s.id===id ? 'block' : 'none'));
+  if(window.gsap){ try{ gsap.fromTo('#'+id,{opacity:0,y:8},{opacity:1,y:0,duration:0.4,ease:'power2.out'}); }catch(_){} }
 }
 
 /* ---------- Update UI ---------- */
 function updateUI(){
-  document.getElementById('sessionId').innerText = store.id;
-  document.getElementById('pointBadge').innerText = store.points;
-  document.getElementById('points').innerText = store.points;
-  document.getElementById('streak').innerText = store.streak || 0;
-  // last check-in
-  if(store.entries.length){
-    const last = store.entries[store.entries.length-1];
-    document.getElementById('lastCheck').innerText = `${last.date} | mood ${last.mood} | mem ${last.memory} | focus ${last.focus}`;
-  } else document.getElementById('lastCheck').innerText = 'No check-ins';
-  // quick summary & trends:
-  renderSummary();
-  renderMiniTrend();
-  renderProgressChart();
+  try{
+    document.getElementById('sessionId').innerText = store.id;
+    document.getElementById('pointBadge').innerText = store.points;
+    document.getElementById('points').innerText = store.points;
+    document.getElementById('streak').innerText = store.streak || 0;
+    updateLevelUI();
+    if(store.entries.length){
+      const last = store.entries[store.entries.length-1];
+      document.getElementById('lastCheck').innerText = `${last.date}${last.time?(' '+last.time):''} | mood ${last.mood} | mem ${last.memory} | focus ${last.focus}`;
+    } else document.getElementById('lastCheck').innerText = 'No check-ins';
+    renderSummary();
+    renderMiniTrend();
+    renderProgressChart();
+    renderRecentActivity();
+    updateAIFeedback();
+  } catch(err){
+    console.error(err);
+    const n=document.getElementById('notify'); if(n){ n.innerText='Error: '+(err && err.message? err.message : 'unknown'); n.classList.add('show'); setTimeout(()=> n.classList.remove('show'), 3000); }
+  }
 }
 
 /* ---------- Theme toggle ---------- */
 document.getElementById('themeToggle').addEventListener('click', ()=>{
-  if(store.settings.theme === 'dark'){ store.settings.theme = 'light'; document.documentElement.style.setProperty('--bg1','#f6f8fb'); document.documentElement.style.setProperty('--bg2','#ebf0f6'); document.body.style.color='#111'; } 
-  else { store.settings.theme = 'dark'; document.documentElement.style.setProperty('--bg1','#071129'); document.documentElement.style.setProperty('--bg2','#0f1724'); document.body.style.color='#e6eef8'; }
+  if(store.settings.theme === 'dark'){ store.settings.theme = 'light'; document.documentElement.style.setProperty('--bg1','#F9FAFB'); document.documentElement.style.setProperty('--bg2','#EEF2F7'); document.body.style.color='#111'; }
+  else { store.settings.theme = 'dark'; document.documentElement.style.setProperty('--bg1','#111827'); document.documentElement.style.setProperty('--bg2','#0b1220'); document.body.style.color='#e6eef8'; }
   saveStore();
 });
 
 /* ---------- Check-in logic ---------- */
 const ciDate = document.getElementById('ciDate');
+const ciTime = document.getElementById('ciTime');
 const ciMood = document.getElementById('ciMood');
 const ciMoodLabel = document.getElementById('ciMoodLabel');
 const ciSleep = document.getElementById('ciSleep');
@@ -465,24 +644,63 @@ ciSave.addEventListener('click', ()=>{
   const entry = {
     id: uid(),
     date: ciDate.value || new Date().toISOString().slice(0,10),
+    time: ciTime.value || new Date().toTimeString().slice(0,5),
     mood: clamp(Number(ciMood.value || 5), 0, 10),
     sleep: clamp(Number(ciSleep.value || 0), 0, 24),
     memory: clamp(Number(ciMemory.value || 0), 0, 10),
     focus: clamp(Number(ciFocus.value || 0), 0, 10),
     notes: (ciNotes.value || ''),
-    games: {} // filled when games played same session (optional)
+    at: Date.now(),
+    games: {}
   };
   store.entries.push(entry);
-  // update streak (simple: days with entries in last N days)
   computeStreak();
-  // save
+  awardXP(10); awardPoints(5);
+  if(store.entries.length===1) checkAndAwardBadge('FirstCheckin','First Check-in','fa-check');
+  if(store.streak>=5) checkAndAwardBadge('Streak5','5-day Streak','fa-fire');
+  if(store.streak>=7) checkAndAwardBadge('Consistency7','Consistency 7','fa-calendar-check');
   saveStore();
   alert('Check-in saved locally.');
 });
 
-ciReset.addEventListener('click', ()=> {
-  ciMood.value = 5; ciMoodLabel.innerText = 5; ciSleep.value=''; ciMemory.value=''; ciFocus.value=''; ciNotes.value='';
-});
+ciReset.addEventListener('click', ()=> { ciMood.value = 5; ciMoodLabel.innerText = 5; ciSleep.value=''; ciMemory.value=''; ciFocus.value=''; ciNotes.value=''; });
+
+/* ---------- Mini check-in tests ---------- */
+const miniResult = document.getElementById('miniResult');
+function miniSeq(){
+  const len = 2 + Math.floor(Math.random()*5);
+  const seq = Array.from({length:len}, ()=> Math.floor(Math.random()*10));
+  miniResult.innerText = 'Memorize: ' + seq.join(' ');
+  setTimeout(()=>{
+    miniResult.innerText = 'Type the sequence separated by spaces';
+    const ans = prompt('Enter the sequence:');
+    const arr = (ans||'').trim().split(/\s+/).map(Number);
+    const correct = arr.length===seq.length && arr.every((v,i)=>v===seq[i]);
+    const acc = Math.round(100 * (arr.filter((v,i)=>v===seq[i]).length/len));
+    miniResult.innerText = correct ? 'Correct' : 'Incorrect (was '+seq.join(' ')+')';
+    store.metrics.memoryMatch.push({mini:true, len, acc, at:Date.now()});
+    if(correct){ awardPoints(8); awardXP(6); }
+    saveStore(); renderRecentActivity(); updateAIFeedback();
+  }, 1200);
+}
+function miniWord(){
+  const WORDS = ['tree','cloud','stone','glass','river','mount','paper','clock','apple','chair','music','light','ocean','garden','planet','silver'];
+  const sample = shuffleArray(WORDS).slice(0,5);
+  miniResult.innerText = 'Memorize words: '+sample.join(', ');
+  setTimeout(()=>{
+    miniResult.innerText = 'Recall as many as you can (comma separated)';
+    const ans = prompt('Type recalled words (comma separated):')||'';
+    const got = ans.toLowerCase().split(',').map(s=>s.trim()).filter(Boolean);
+    const correct = got.filter(w=> sample.includes(w)).length;
+    miniResult.innerText = 'You recalled '+correct+' / '+sample.length;
+    awardPoints(correct*3); awardXP(correct*2);
+    store.metrics.scramble.push({recall:true, total:sample.length, correct, at:Date.now()});
+    saveStore(); renderRecentActivity(); updateAIFeedback();
+  }, 1500);
+}
+
+document.getElementById('miniSeqBtn').addEventListener('click', miniSeq);
+document.getElementById('miniWordBtn').addEventListener('click', miniWord);
 
 /* ---------- Summary & Trends ---------- */
 function renderSummary(){
@@ -499,21 +717,27 @@ function renderSummary(){
   if(avgFocus < 6) suggestions.push('Focus is low — try a 2-minute breathing break before tasks.');
   if(!suggestions.length) suggestions.push('Your short-term metrics look stable. Keep the routine up!');
   out.innerHTML = `<div>Last 7-day averages — Memory: <strong>${avgMem}</strong>, Focus: <strong>${avgFocus}</strong>, Mood: <strong>${avgMood}</strong>, Sleep: <strong>${avgSleep} hrs</strong></div><ul>${suggestions.map(s=>'<li>'+s+'</li>').join('')}</ul>`;
-  // suggestions panel
   document.getElementById('suggestList').innerHTML = suggestions.length ? suggestions.map(s=>'<div class="muted">• '+s+'</div>').join('') : '<div class="muted">No suggestions — keep going.</div>';
+  renderAveragesList();
+}
+
+function renderAveragesList(){
+  const last7 = store.entries.slice(-7);
+  const out = document.getElementById('avgList');
+  if(!last7.length){ out.innerText='No data'; return; }
+  const m = v=> (last7.reduce((a,b)=>a+(b[v]||0),0)/last7.length).toFixed(2);
+  out.innerHTML = `Mood ${m('mood')} • Mem ${m('memory')} ��� Focus ${m('focus')} • Sleep ${m('sleep')}`;
 }
 
 function computeStreak(){
-  // simple streak: count unique recent days with entries in last 14 days
-  const last14 = store.entries.slice(-14);
-  const days = new Set(last14.map(e=>e.date));
+  const days = new Set(store.entries.map(e=>e.date));
   store.streak = days.size;
 }
 
 /* ---------- Mini trend chart ---------- */
 let miniTrendChart = null;
 function renderMiniTrend(){
-  const ctx = document.getElementById('miniTrend').getContext('2d');
+  const el = document.getElementById('miniTrend'); if(!window.Chart || !el) return; const ctx = el.getContext('2d');
   const p = store.entries.slice(-14);
   const labels = p.map(e=>e.date);
   const mem = p.map(e=>e.memory);
@@ -529,7 +753,7 @@ function renderMiniTrend(){
 /* ---------- Progress chart ---------- */
 let progressChart = null;
 function renderProgressChart(){
-  const ctx = document.getElementById('progressChart').getContext('2d');
+  const el = document.getElementById('progressChart'); if(!window.Chart || !el) return; const ctx = el.getContext('2d');
   const p = store.entries.slice(-30);
   const labels = p.map(e=>e.date);
   const mem = p.map(e=>e.memory);
@@ -542,14 +766,28 @@ function renderProgressChart(){
   });
 }
 
+function renderRecentActivity(){
+  const out = document.getElementById('recentActivity');
+  const items = [];
+  (store.metrics.reaction||[]).slice(-8).forEach(x=> items.push({at:x.at, text:`Reaction ${x.rt} ms`}));
+  (store.metrics.scramble||[]).slice(-8).forEach(x=> items.push({at:x.at, text: x.recall?`Recall ${x.correct}/${x.total}`:(x.correct?`Scramble ${x.time}s`:`Scramble miss`)}));
+  (store.metrics.memoryMatch||[]).slice(-8).forEach(x=> items.push({at:x.at, text: x.mini?`Seq mini acc ${x.acc}%`:`MemoryMatch ${x.score}` }));
+  (store.metrics.nback||[]).slice(-8).forEach(x=> items.push({at:x.at, text:`N-back ${x.acc}%`}));
+  (store.badges||[]).slice(-6).forEach(b=> items.push({at: Date.parse(b.at)||Date.now(), text:`Badge: ${b.label}`}));
+  (store.entries||[]).slice(-3).forEach(e=> items.push({at: e.at||Date.now(), text:`Check-in ${e.date} mood ${e.mood}`}));
+  items.sort((a,b)=>(b.at||0)-(a.at||0));
+  const top = items.slice(0,6);
+  out.innerHTML = top.length ? top.map(i=>`<div class="muted">• ${i.text}</div>`).join('') : 'No recent activity';
+}
+
 /* ---------- Games: Memory Card Match ---------- */
 let cardPairs = ['🐶','🐱','🦊','🐼','🦁','🐸','🐵','🐰'];
-let boardState = {tiles:[], first:null, second:null, matched:0, score:0};
+let boardState = {tiles:[], first:null, second:null, matched:0, score:0, moves:0, start:0};
 
 function setupBoard(){
   const pool = shuffle([...cardPairs, ...cardPairs]);
   boardState.tiles = pool.map((v,i)=>({id:i, val:v, revealed:false, matched:false}));
-  boardState.first = null; boardState.second = null; boardState.matched = 0; boardState.score = 0;
+  boardState.first = null; boardState.second = null; boardState.matched = 0; boardState.score = 0; boardState.moves=0; boardState.start=performance.now();
   renderBoard();
 }
 
@@ -565,22 +803,21 @@ function renderBoard(){
     btn.addEventListener('click', ()=> tileClick(t.id));
     board.appendChild(btn);
   });
-  document.getElementById('cardScore').innerText = 'Score: ' + boardState.score;
+  document.getElementById('cardScore').innerText = 'Score: ' + boardState.score + ' • Moves: ' + boardState.moves;
 }
 
 function tileClick(id){
   const t = boardState.tiles.find(x=>x.id===id);
   if(t.matched || t.revealed) return;
-  t.revealed = true;
+  t.revealed = true; boardState.moves++;
   if(!boardState.first) boardState.first = t;
   else if(!boardState.second && t.id !== boardState.first.id) {
     boardState.second = t;
-    // check match
     if(boardState.first.val === boardState.second.val){
       boardState.first.matched = true; boardState.second.matched = true; boardState.matched += 1;
       boardState.score += 10;
       boardState.first = boardState.second = null;
-      awardPoints(10);
+      awardPoints(10); awardXP(8);
       renderBoard();
       checkBoardComplete();
     } else {
@@ -598,10 +835,14 @@ function tileClick(id){
 
 function checkBoardComplete(){
   if(boardState.matched === cardPairs.length){
-    document.getElementById('cardScore').innerText = 'Completed! Score: ' + boardState.score;
-    awardPoints(50);
-    // record game summary
+    const time = Math.round((performance.now()-boardState.start)/1000);
+    document.getElementById('cardScore').innerText = 'Completed! Score: ' + boardState.score + ' • '+time+'s';
+    awardPoints(50); awardXP(25);
     store.games.memoryMatch = (store.games.memoryMatch || 0) + 1;
+    const acc = Math.round((boardState.matched/(boardState.moves/2))*100);
+    store.metrics.memoryMatch.push({time, acc, score:boardState.score, at:Date.now()});
+    if(time<=45) checkAndAwardBadge('MemorySwift','Memory Swift','fa-bolt');
+    if(acc>=85) checkAndAwardBadge('MemoryAccurate','Memory Accurate','fa-bullseye');
     saveStore();
   }
 }
@@ -609,11 +850,14 @@ function checkBoardComplete(){
 document.getElementById('cardReset').addEventListener('click', ()=> { setupBoard(); });
 
 /* ---------- Scramble game ---------- */
-const SCRAMBLE_WORDS = ['planet','coffee','mirror','guitar','bridge','teacher','lamp','window','airport','container'];
-let currentScramble = '';
+const SCRAMBLE_WORDS = ['planet','coffee','mirror','guitar','bridge','teacher','lamp','window','airport','container','algorithm','solution','geometry','momentum','harmony','character'];
+let currentScramble = ''; let scrambleStart=0; let scrambleAttempts=0;
 function newScramble(){
-  const w = SCRAMBLE_WORDS[Math.floor(Math.random()*SCRAMBLE_WORDS.length)];
-  currentScramble = w;
+  const diff = parseInt((store.settings.difficulty||'2'),10);
+  const minLen = diff===1?5:(diff===2?7:9);
+  const pool = SCRAMBLE_WORDS.filter(w=> w.length>=minLen);
+  const w = (pool.length?pool:SCRAMBLE_WORDS)[Math.floor(Math.random()* (pool.length?pool:SCRAMBLE_WORDS).length)];
+  currentScramble = w; scrambleStart=performance.now(); scrambleAttempts=0;
   document.getElementById('scrambleWord').innerText = shuffleArray(w.split('')).join('');
   document.getElementById('scrambleRes').innerText = '';
 }
@@ -621,18 +865,29 @@ document.getElementById('scrambleNew').addEventListener('click', newScramble);
 document.getElementById('scrambleCheck').addEventListener('click', ()=>{
   const guess = document.getElementById('scrambleInput').value.trim().toLowerCase();
   if(!guess) return alert('Type an answer');
+  scrambleAttempts++;
   if(guess === currentScramble){
-    document.getElementById('scrambleRes').innerText = 'Correct!';
-    awardPoints(15);
-  } else document.getElementById('scrambleRes').innerText = 'Try again';
+    const t = Math.round((performance.now()-scrambleStart)/1000);
+    document.getElementById('scrambleRes').innerText = 'Correct! ('+t+'s)';
+    awardPoints(15); awardXP(10);
+    store.metrics.scramble.push({time:t, attempts:scrambleAttempts, correct:true, at:Date.now()});
+    if(t<=5) checkAndAwardBadge('WordQuick','Word Quick','fa-rocket');
+  } else {
+    document.getElementById('scrambleRes').innerText = 'Try again';
+    store.metrics.scramble.push({time:0, attempts:scrambleAttempts, correct:false, at:Date.now()});
+  }
+  saveStore();
 });
 
 /* ---------- Pattern game (simple) ---------- */
 let patternSeq = [];
 function startPattern(){
-  patternSeq = Array.from({length:6}, ()=> Math.floor(Math.random()*6)+1);
-  document.getElementById('patternCanvas').innerText = 'Observe the pattern...';
-  setTimeout(()=>{ document.getElementById('patternCanvas').innerText = 'Now type the sequence separated by spaces'; document.getElementById('patternCanvas').contentEditable = true; }, 1800);
+  const diff = parseInt((store.settings.difficulty||'2'),10);
+  const len = 4 + (diff-1)*2;
+  patternSeq = Array.from({length:len}, ()=> Math.floor(Math.random()*6)+1);
+  const el = document.getElementById('patternCanvas');
+  el.innerText = 'Observe the pattern...';
+  setTimeout(()=>{ el.innerText = 'Now type the sequence separated by spaces'; el.contentEditable = true; }, 1800);
 }
 document.getElementById('patternStart').addEventListener('click', startPattern);
 document.getElementById('patternCheck').addEventListener('click', ()=>{
@@ -640,14 +895,14 @@ document.getElementById('patternCheck').addEventListener('click', ()=>{
   const arr = txt.split(/\s+/).map(Number);
   const ok = arr.length === patternSeq.length && arr.every((v,i)=>v===patternSeq[i]);
   document.getElementById('patternRes').innerText = ok ? 'Correct' : 'Incorrect — sequence was: ' + patternSeq.join(' ');
-  if(ok) awardPoints(20);
+  if(ok){ awardPoints(20); awardXP(12); }
 });
 
 /* ---------- Reaction game ---------- */
 let reactTimer = null, reactStart = 0;
 document.getElementById('reactBox').addEventListener('click', ()=>{
   const box = document.getElementById('reactBox');
-  if(reactTimer){ // click to abort
+  if(reactTimer){
     clearTimeout(reactTimer); reactTimer = null; box.innerText = 'Click to start'; return;
   }
   box.innerText = 'Wait...';
@@ -657,11 +912,13 @@ document.getElementById('reactBox').addEventListener('click', ()=>{
 document.getElementById('reactBox').addEventListener('mousedown', ()=>{
   if(!reactStart) return;
   const rt = Math.round(performance.now() - reactStart);
-  reactStart = 0; clearTimeout(reactTimer); reactTimer = null; document.getElementById('reactBox').style.background='rgba(255,255,255,0.02)'; document.getElementById('reactBox').innerText = `RT: ${rt} ms`;
+  reactStart = 0; clearTimeout(reactTimer); reactTimer = null; const box=document.getElementById('reactBox'); box.style.background='rgba(255,255,255,0.02)'; box.innerText = `RT: ${rt} ms`;
   const best = store.games.reactionBest ? Math.min(store.games.reactionBest, rt) : rt;
   store.games.reactionBest = best;
   document.getElementById('reactBest').innerText = best;
-  awardPoints( Math.max(1, Math.round(1000/rt)) );
+  awardPoints( Math.max(1, Math.round(1000/rt)) ); awardXP(Math.max(1, Math.round(600/rt)));
+  store.metrics.reaction.push({rt, at:Date.now()});
+  if(best<=250) checkAndAwardBadge('QuickReflex','Quick Reflex','fa-hand-pointer');
   saveStore();
 });
 
@@ -671,7 +928,7 @@ document.getElementById('nbackBtn').addEventListener('click', ()=>{
   if(nbackRunning) return;
   nbackRunning=true; nbackSeq=[]; nbackIndex=0; nbackCorrect=0; document.getElementById('nbackShow').innerText='Ready';
   const letters = 'ABCDEFGH';
-  let rounds=12;
+  let rounds = 10 + (parseInt((store.settings.difficulty||'2'),10)-1)*4;
   function step(){
     if(!nbackRunning || nbackIndex >= rounds){ endNback(); return; }
     const ch = letters[Math.floor(Math.random()*letters.length)];
@@ -691,8 +948,11 @@ document.getElementById('nbackBtn').addEventListener('click', ()=>{
     nbackRunning=false;
     window.removeEventListener('keydown', nbackKey);
     document.getElementById('nbackRes').innerText = `Score: ${nbackCorrect}/${nbackIndex}`;
-    awardPoints(nbackCorrect*5);
+    awardPoints(nbackCorrect*5); awardXP(nbackCorrect*3);
     store.games.nback = (store.games.nback || 0) + 1;
+    const acc = Math.round((nbackCorrect/nbackIndex)*100);
+    store.metrics.nback.push({acc, at:Date.now()});
+    if(acc>=60) checkAndAwardBadge('Nback60','N-back 60%','fa-brain');
     saveStore();
   }
   step();
@@ -708,8 +968,9 @@ document.getElementById('wfStart').addEventListener('click', ()=>{
   if(ans !== null){
     wfList = ans.split(',').map(s=>s.trim()).filter(Boolean);
     document.getElementById('wfRes').innerText = 'You listed ' + wfList.length + ' words.';
-    awardPoints(wfList.length*2);
+    awardPoints(wfList.length*2); awardXP(Math.round(wfList.length*1.2));
     store.games.wordFluency = (store.games.wordFluency || 0) + wfList.length;
+    if(wfList.length>=15) checkAndAwardBadge('Fluent15','Word Fluent 15','fa-feather');
     saveStore();
   }
   wfActive=false;
@@ -741,7 +1002,7 @@ document.getElementById('breathStart').addEventListener('click', ()=>{
   const el = document.getElementById('breathCircle');
   document.getElementById('breathStatus').innerText = 'Starting breathing';
   function cycle(){
-    if(count >= cycles){ clearInterval(breatheTimer); breatheTimer = null; document.getElementById('breathStatus').innerText='Done'; el.style.transform='scale(1)'; awardPoints(5); saveStore(); return; }
+    if(count >= cycles){ clearInterval(breatheTimer); breatheTimer = null; document.getElementById('breathStatus').innerText='Done'; el.style.transform='scale(1)'; awardPoints(5); awardXP(4); saveStore(); return; }
     el.style.transition='transform 3s linear'; el.style.transform='scale(1.18)'; document.getElementById('breathStatus').innerText='Inhale'; 
     setTimeout(()=>{ el.style.transition='transform 2s linear'; el.style.transform='scale(1.25)'; document.getElementById('breathStatus').innerText='Hold'; },3000);
     setTimeout(()=>{ el.style.transition='transform 4s linear'; el.style.transform='scale(0.85)'; document.getElementById('breathStatus').innerText='Exhale'; },5000);
@@ -763,7 +1024,7 @@ document.getElementById('bodyScanStart').addEventListener('click', ()=>{
   ];
   let i=0; document.getElementById('bodyScanText').innerText = steps[0];
   const t = setInterval(()=> {
-    i++; if(i>=steps.length){ clearInterval(t); document.getElementById('bodyScanText').innerText='Completed body scan.'; awardPoints(5); saveStore(); return; }
+    i++; if(i>=steps.length){ clearInterval(t); document.getElementById('bodyScanText').innerText='Completed body scan.'; awardPoints(5); awardXP(4); saveStore(); return; }
     document.getElementById('bodyScanText').innerText = steps[i];
   }, 22000);
 });
@@ -787,7 +1048,7 @@ document.getElementById('deskStart').addEventListener('click', ()=>{
   ];
   let i=0; document.getElementById('deskStatus').innerText = steps[0];
   deskTimer = setInterval(()=> {
-    i++; if(i>=steps.length){ clearInterval(deskTimer); deskTimer=null; document.getElementById('deskStatus').innerText='Completed routine'; awardPoints(8); saveStore(); return; }
+    i++; if(i>=steps.length){ clearInterval(deskTimer); deskTimer=null; document.getElementById('deskStatus').innerText='Completed routine'; awardPoints(8); awardXP(6); saveStore(); return; }
     document.getElementById('deskStatus').innerText = steps[i];
   }, 30000);
 });
@@ -796,11 +1057,11 @@ document.getElementById('deskStop').addEventListener('click', ()=> { clearInterv
 /* Flow */
 document.getElementById('flowStart').addEventListener('click', ()=>{
   document.getElementById('flowStatus').innerText = 'Flow started — follow breathing and gentle movements for 5 min';
-  setTimeout(()=>{ document.getElementById('flowStatus').innerText='Flow ended'; awardPoints(12); saveStore(); }, 300000);
+  setTimeout(()=>{ document.getElementById('flowStatus').innerText='Flow ended'; awardPoints(12); awardXP(10); saveStore(); }, 300000);
 });
 
 /* ---------- EEG upload & simple metrics ---------- */
-let eegData = null;
+let eegData = null; let eegSimInt=null; let eegSimPhase=0; let eegSimLoad=60;
 document.getElementById('eegFile').addEventListener('change', (ev)=>{
   const f = ev.target.files[0];
   if(!f) return;
@@ -818,13 +1079,14 @@ document.getElementById('eegFile').addEventListener('change', (ev)=>{
     if(!parsed.length){ alert('No numeric rows found. Expected CSV with time, amplitude.'); return; }
     eegData = parsed;
     plotEeg(parsed);
+    checkAndAwardBadge('EEGExplorer','EEG Explorer','fa-wave-square');
   };
   r.readAsText(f);
 });
 
 let eegChart = null;
 function plotEeg(parsed){
-  const ctx = document.getElementById('eegPlot').getContext('2d');
+  const el = document.getElementById('eegPlot'); if(!window.Chart || !el) return; const ctx = el.getContext('2d');
   const labels = parsed.map(p=>p.t);
   const vals = parsed.map(p=>p.v);
   if(eegChart) eegChart.destroy();
@@ -836,6 +1098,80 @@ function plotEeg(parsed){
   document.getElementById('eegMetrics').innerText = `Points: ${vals.length} • Min: ${Math.min(...vals).toFixed(3)} • Max: ${Math.max(...vals).toFixed(3)}`;
 }
 
+function startEegSim(targetCanvasId, onAttention){
+  const canvas = document.getElementById(targetCanvasId); if(!canvas) return;
+  const ctx = canvas.getContext('2d');
+  let t=0; cancelEegSim();
+  eegSimInt = setInterval(()=>{
+    const w = canvas.width, h = canvas.height;
+    canvas.width = canvas.clientWidth; canvas.height = canvas.clientHeight;
+    ctx.clearRect(0,0,w,h);
+    ctx.strokeStyle = '#4f46e5'; ctx.lineWidth=2; ctx.beginPath();
+    const alpha = 0.6+0.4*Math.sin(t/17+eegSimPhase);
+    const beta = 0.6+0.4*Math.cos(t/11+eegSimPhase*0.7);
+    const base = Math.max(0, Math.min(100, Math.round(60*beta/(alpha+0.2))));
+    const attn = Math.round(0.7*base + 0.3*eegSimLoad);
+    for(let x=0;x<w;x++){
+      const y = h/2 + Math.sin((x+t)/14)*14*alpha + Math.sin((x+t)/6)*6*beta + (Math.random()-0.5)*2;
+      if(x===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+    }
+    ctx.stroke();
+    if(onAttention) onAttention(attn);
+    t+=3;
+  }, 60);
+}
+function cancelEegSim(){ if(eegSimInt) clearInterval(eegSimInt); eegSimInt=null; }
+
+function glowBrain(svgId, level){
+  const el = document.getElementById(svgId); if(!el) return;
+  const path = el.querySelector('path');
+  const op = Math.max(0.2, Math.min(0.85, level/120));
+  path.style.filter = `drop-shadow(0 0 ${Math.round(level/6)}px rgba(79,70,229,${op}))`;
+}
+
+// Dashboard EEG sim controls
+const eegSimStartBtn = document.getElementById('eegSimStart');
+const eegSimStopBtn = document.getElementById('eegSimStop');
+if(eegSimStartBtn){
+  eegSimStartBtn.addEventListener('click', ()=>{
+    startEegSim('eegSim', (attn)=>{ document.getElementById('attnLabel').innerText = 'Attention: '+attn+'%'; const nf=document.getElementById('nfStatus'); if(nf) nf.innerText = 'Attention: '+attn+'%'; glowBrain('brainSvg', attn); glowBrain('brainSvg2', attn); });
+    checkAndAwardBadge('EEGSimRun','EEG Simulation','fa-bolt');
+  });
+  eegSimStopBtn.addEventListener('click', ()=>{ cancelEegSim(); document.getElementById('attnLabel').innerText = 'Attention: -'; });
+}
+
+// Plotly EEG + Three.js brain integration
+let plotlyReady=false, plotlyTimer=null, simTime=0, simSpeed=1, currentStage='NREM';
+let waveLive={delta:10, theta:6, alpha:4, beta:2};
+function initPlotlyEEG(){ try{ if(plotlyReady) return; if(!window.Plotly) return; const w=document.getElementById('eegChart'); const b=document.getElementById('ntBar'); if(!w||!b) return; Plotly.newPlot(w,[{x:[],y:[],mode:'lines',name:'Delta',line:{color:'#4f46e5'}},{x:[],y:[],mode:'lines',name:'Theta',line:{color:'#22d3ee'}},{x:[],y:[],mode:'lines',name:'Alpha',line:{color:'#a78bfa'}},{x:[],y:[],mode:'lines',name:'Beta',line:{color:'#fbbf24'}}],{title:'Simulated EEG Waves',paper_bgcolor:'rgba(0,0,0,0)',plot_bgcolor:'rgba(255,255,255,0.02)',margin:{l:40,r:10,t:30,b:30},xaxis:{title:'Time (s)'},yaxis:{title:'Amplitude (μV)'},showlegend:true},{displayModeBar:false}); Plotly.newPlot(b,[{x:['Dopamine','Serotonin','Acetylcholine'],y:[50,40,30],type:'bar',marker:{color:['#10b981','#22d3ee','#fbbf24']}}],{title:'Neurotransmitters',paper_bgcolor:'rgba(0,0,0,0)',plot_bgcolor:'rgba(255,255,255,0.02)',margin:{l:40,r:10,t:30,b:30},yaxis:{range:[0,100]}},{displayModeBar:false}); plotlyReady=true; }catch(_){}}
+function setStage(stage){ if(currentStage===stage) return; currentStage=stage; const lab=document.getElementById('stageLabel'); if(lab) lab.innerText='Stage: '+stage; const el=document.getElementById('eegChart'); if(el && window.Plotly){ const bg = stage==='REM' ? 'rgba(88,28,135,0.18)' : 'rgba(15,23,42,0.14)'; Plotly.relayout(el,{plot_bgcolor:bg}); } }
+function startPlotlySim(){ try{ if(plotlyTimer||!window.Plotly) return; initPlotlyEEG(); plotlyTimer = setInterval(()=>{ const load = (window.eegSimLoad||60)/60; simTime += 0.6*simSpeed; const noise=()=> (Math.random()-0.5)*0.5; waveLive.delta = 10 + 3*Math.sin(simTime*0.5) + noise(); waveLive.theta = 6 + 2*Math.sin(simTime*0.8+1.2) + noise(); waveLive.alpha = 4 + 1.5*Math.sin(simTime*1.1+0.6) + noise(); waveLive.beta  = 2 + 1.2*Math.sin(simTime*1.6+2.0) + noise(); for(const k in waveLive) waveLive[k] = Math.max(0.1, waveLive[k]*load); const w=document.getElementById('eegChart'); if(w) Plotly.extendTraces(w,{x:[[simTime],[simTime],[simTime],[simTime]], y:[[waveLive.delta],[waveLive.theta],[waveLive.alpha],[waveLive.beta]]}, [0,1,2,3], 180); const d = clamp(Math.round(50 + waveLive.beta*10),0,100); const s = clamp(Math.round(40 + waveLive.alpha*8),0,100); const a = clamp(Math.round(30 + waveLive.theta*9),0,100); const b=document.getElementById('ntBar'); if(b) Plotly.restyle(b,'y', [[d,s,a]]); const stage = (Math.floor(simTime/6)%2===0)?'NREM':'REM'; setStage(stage); if(stage==='REM' && threeScene) spawnDream(3); updateThreeGlow(); }, 600); }catch(_){}}
+function stopPlotlySim(){ try{ if(plotlyTimer){ clearInterval(plotlyTimer); plotlyTimer=null; } }catch(_){ }
+}
+let threeScene=null, threeRenderer=null, threeCamera=null, threeControls=null, threeLobes=null, threeAnimReq=null;
+function initThreeBrain(){ try{ if(threeScene || !window.THREE) return; const c=document.getElementById('brainThree'); if(!c) return; const w=c.clientWidth, h=c.clientHeight; const scene=new THREE.Scene(); const cam=new THREE.PerspectiveCamera(45, w/h, 0.1, 100); cam.position.set(0,1.6,4.2); const renderer=new THREE.WebGLRenderer({antialias:true,alpha:true}); renderer.setSize(w,h); c.innerHTML=''; c.appendChild(renderer.domElement); const ambient=new THREE.AmbientLight(0xffffff,0.5); scene.add(ambient); const key=new THREE.PointLight(0xffffff,1.2); key.position.set(3,3,4); scene.add(key); const geo=new THREE.SphereGeometry(1.2,48,32); const mat=new THREE.MeshStandardMaterial({color:0x334155,metalness:0.2,roughness:0.8,transparent:true,opacity:0.35}); const brain=new THREE.Mesh(geo,mat); brain.scale.set(1.0,0.8,1.3); scene.add(brain); const makeLobe=(color,pos,rad)=>{ const g=new THREE.SphereGeometry(rad,32,24); const m=new THREE.MeshStandardMaterial({color,metalness:0.1,roughness:0.6,emissive:color,emissiveIntensity:0.1,transparent:true,opacity:0.8}); const mesh=new THREE.Mesh(g,m); mesh.position.copy(pos); scene.add(mesh); return mesh; }; const frontal=makeLobe(0x4f46e5,new THREE.Vector3(0.6,0.2,0.6),0.55); const temporal=makeLobe(0x22d3ee,new THREE.Vector3(-0.9,-0.2,0.1),0.5); const prefrontal=makeLobe(0xfbbf24,new THREE.Vector3(0.8,0.3,1.0),0.4); threeLobes={frontal,temporal,prefrontal}; if(THREE.OrbitControls){ threeControls=new THREE.OrbitControls(cam, renderer.domElement); threeControls.enableDamping=true; threeControls.dampingFactor=0.08; } const raycaster=new THREE.Raycaster(); const mouse=new THREE.Vector2(); renderer.domElement.addEventListener('pointerdown',(e)=>{ const rect=renderer.domElement.getBoundingClientRect(); mouse.x=((e.clientX-rect.left)/rect.width)*2-1; mouse.y=-((e.clientY-rect.top)/rect.height)*2+1; raycaster.setFromCamera(mouse, cam); const hits=raycaster.intersectObjects(Object.values(threeLobes)); if(hits.length){ const obj=hits[0].object; const pair=Object.entries(threeLobes).find(([k,v])=>v===obj); const name=pair?pair[0]:''; let info=''; if(name==='frontal') info='Frontal (Delta) — deep rest & consolidation'; if(name==='temporal') info='Temporal (Theta) — memory encoding & creativity'; if(name==='prefrontal') info='Prefrontal (Beta) — active thinking & focus'; const ri=document.getElementById('regionInfo'); if(ri){ ri.innerText=info+` | DA ${Math.round(50 + waveLive.beta*10)} • 5-HT ${Math.round(40+waveLive.alpha*8)} • ACh ${Math.round(30+waveLive.theta*9)}`; } } }); function onResize(){ const w=c.clientWidth, h=c.clientHeight; cam.aspect=w/h; cam.updateProjectionMatrix(); renderer.setSize(w,h); } window.addEventListener('resize', onResize); threeScene=scene; threeRenderer=renderer; threeCamera=cam; (function animate(){ threeAnimReq=requestAnimationFrame(animate); if(threeControls) threeControls.update(); brain.rotation.y+=0.003; renderer.render(scene, cam); })(); }catch(_){}}
+function updateThreeGlow(){ try{ if(!threeLobes) return; const d=clamp(waveLive.delta/14,0.05,2.0); const t=clamp(waveLive.theta/10,0.05,2.0); const b=clamp(waveLive.beta/6,0.05,2.0); threeLobes.frontal.material.emissiveIntensity=d; threeLobes.temporal.material.emissiveIntensity=t; threeLobes.prefrontal.material.emissiveIntensity=b; }catch(_){}}
+function spawnDream(n){ try{ if(!threeScene) return; for(let i=0;i<n;i++){ const g=new THREE.SphereGeometry(0.05,12,10); const m=new THREE.MeshStandardMaterial({color:0xffffff,emissive:0x9f7aea,emissiveIntensity:1,transparent:true,opacity:0.9}); const p=new THREE.Mesh(g,m); p.position.set((Math.random()-0.5)*1.2,(Math.random()-0.5)*1.0,(Math.random()*1.2+0.3)); const dx=(Math.random()-0.5)*0.02, dy=(Math.random()-0.5)*0.02, dz=(Math.random()-0.5)*0.02; let life=60; threeScene.add(p); (function tick(){ life--; p.position.x+=dx; p.position.y+=dy; p.position.z+=dz; p.material.opacity*=0.96; if(life>0) requestAnimationFrame(tick); else { threeScene.remove(p); p.geometry.dispose(); p.material.dispose(); } })(); } }catch(_){}}
+(function hookup(){ try{ const speedEl=document.getElementById('simSpeed'); if(speedEl){ speedEl.addEventListener('input', ()=>{ simSpeed = Math.max(0.25, parseFloat(speedEl.value)||1); }); } const s=document.getElementById('eegSimStart'); if(s){ s.addEventListener('click', ()=>{ initPlotlyEEG(); startPlotlySim(); initThreeBrain(); }); } const st=document.getElementById('eegSimStop'); if(st){ st.addEventListener('click', ()=>{ stopPlotlySim(); }); } }catch(_){ } })();
+
+// p5.js 3D brain map (WebGL)
+(function(){
+  if(!window.p5) return;
+  let attnVal = 50;
+  const attnSource = ()=>{ const t=document.getElementById('attnLabel'); const m=t&&/([0-9]+)%/.exec(t.innerText); return m? parseInt(m[1],10): (window.eegSimLoad||60); };
+  new p5((p)=>{
+    p.setup = ()=>{ const parent=document.getElementById('brain3d'); if(!parent) return; const c=p.createCanvas(parent.clientWidth,parent.clientHeight,p.WEBGL); c.parent(parent); };
+    p.windowResized = ()=>{ const parent=document.getElementById('brain3d'); if(parent) p.resizeCanvas(parent.clientWidth,parent.clientHeight); };
+    p.draw = ()=>{ const parent=document.getElementById('brain3d'); if(!parent) return; attnVal=attnSource(); p.background(8,14,32); p.orbitControl(1,1,0.1); const glow=p.map(attnVal,0,100,80,255); p.ambientLight(70); p.pointLight(glow,100,200, 220,-220,220); p.noStroke(); p.push(); p.rotateY(p.frameCount*0.01); p.rotateX(Math.sin(p.frameCount*0.01)*0.25); p.specularMaterial(glow,120,255,200); p.sphere(Math.min(p.width,p.height)/3, 40, 32); p.pop(); };
+  });
+})();
+
+// EEG tab sim controls reuse
+const eegSimStartBtn2 = document.getElementById('eegSimStart2');
+const eegSimStopBtn2 = document.getElementById('eegSimStop2');
+if(eegSimStartBtn2){ eegSimStartBtn2.addEventListener('click', ()=>{ startEegSim('eegPlot', (attn)=>{ const nf=document.getElementById('nfStatus'); if(nf) nf.innerText = 'Attention: '+attn+'%'; glowBrain('brainSvg2', attn); }); }); }
+if(eegSimStopBtn2){ eegSimStopBtn2.addEventListener('click', ()=>{ cancelEegSim(); document.getElementById('nfStatus').innerText='Attention: -'; }); }
+
 document.getElementById('computeEeg').addEventListener('click', ()=>{
   if(!eegData) return alert('Upload EEG CSV first.');
   const vals = eegData.map(p=>p.v);
@@ -846,17 +1182,61 @@ document.getElementById('computeEeg').addEventListener('click', ()=>{
 });
 
 /* ---------- Points & awards ---------- */
-function awardPoints(p){
-  store.points = (store.points || 0) + Math.round(p);
-  saveStore();
+function awardPoints(p){ store.points = (store.points || 0) + Math.round(p); saveStore(); }
+
+/* ---------- AI Feedback & Coach ---------- */
+function updateAIFeedback(){
+  const el = document.getElementById('aiFeedback');
+  const last = store.entries[store.entries.length-1];
+  const bestRT = store.games.reactionBest || null;
+  let msg = [];
+  if(last){
+    if(last.focus>=8 && last.memory>=7) msg.push('Your focus is high today — try advanced exercises.');
+    if(last.sleep<6) msg.push('Short sleep detected — schedule lighter tasks and a 2-min breathing break.');
+    if(last.mood<=3) msg.push('Mood is low — a short walk and gentle breathing may help.');
+  }
+  if(bestRT && bestRT<300) msg.push('Great reaction times — consider adding more memory drills.');
+  const mm = store.metrics.memoryMatch.slice(-1)[0]; if(mm && mm.acc>=85) msg.push('Strong memory accuracy — level up to harder patterns.');
+  if(!msg.length) msg.push('Complete a check-in or game to unlock personalized insights.');
+  const text = 'AI Feedback: ' + msg.join(' ');
+  if(window.Typed){ try{ if(window.aiTyped) window.aiTyped.destroy(); el.innerHTML=''; window.aiTyped = new Typed('#aiFeedback',{strings:[text],typeSpeed:26, backSpeed:0, showCursor:false}); }catch(_){ el.innerText = text; } }
+  else el.innerText = text;
+}
+
+const coachLog = document.getElementById('coachLog');
+function coachSay(text){ const d=document.createElement('div'); d.className='coach-msg'; d.innerText='Coach: '+text; coachLog.appendChild(d); coachLog.scrollTop=coachLog.scrollHeight; }
+function coachUser(text){ const d=document.createElement('div'); d.className='coach-msg me'; d.innerText=text; coachLog.appendChild(d); coachLog.scrollTop=coachLog.scrollHeight; }
+function coachReply(q){
+  const last = store.entries[store.entries.length-1];
+  const avg = (k)=>{ const arr=store.entries.map(e=>e[k]||0); return arr.length? Math.round(arr.reduce((a,b)=>a+b,0)/arr.length):0; };
+  let ans='';
+  if(/focus/i.test(q)) ans = `Your avg focus is ${avg('focus')}/10. Try a 2-min breathing before deep work.`;
+  else if(/memory/i.test(q)) ans = `Your avg memory is ${avg('memory')}/10. Short recall games can boost it.`;
+  else if(/schedule|time/i.test(q)) ans = suggestBestTime();
+  else if(/sleep/i.test(q)) ans = `Avg sleep ${avg('sleep')}h. Target 7–9h.`;
+  else ans = last? `Latest: mood ${last.mood}, mem ${last.memory}, focus ${last.focus}. Keep consistent!` : 'Log a check-in to personalize advice.';
+  coachSay(ans);
+}
+
+document.getElementById('coachSend').addEventListener('click', ()=>{ const txt=document.getElementById('coachText').value.trim(); if(!txt) return; document.getElementById('coachText').value=''; coachUser(txt); setTimeout(()=> coachReply(txt), 300); });
+
+/* ---------- Personalized Scheduling ---------- */
+function suggestBestTime(){
+  const buckets = {morning:[], midday:[], evening:[]};
+  for(const e of store.entries){ const t=(e.time||'08:00'); const h=parseInt(t.split(':')[0],10); const k = h<12? 'morning' : (h<17? 'midday':'evening'); buckets[k].push((e.focus||0)+(e.memory||0)); }
+  const avg = k=> buckets[k].length? Math.round(buckets[k].reduce((a,b)=>a+b,0)/buckets[k].length):0;
+  const scores = Object.entries({morning:avg('morning'), midday:avg('midday'), evening:avg('evening')});
+  scores.sort((a,b)=>b[1]-a[1]);
+  if(!scores.length || scores[0][1]===0) return 'Collect a few check-ins with time to suggest optimal study times.';
+  return `Best window: ${scores[0][0]} (score ${scores[0][1]}). Try scheduling study blocks then.`;
 }
 
 /* ---------- Export / Import ---------- */
 document.getElementById('exportCsvBtn').addEventListener('click', exportCSV);
 document.getElementById('exportSessionCSV').addEventListener('click', exportCSV);
 function exportCSV(){
-  const rows = [['id','date','mood','sleep','memory','focus','notes','games']];
-  for(const e of store.entries) rows.push([e.id,e.date,e.mood,e.sleep,e.memory,e.focus,e.notes, JSON.stringify(e.games||{})]);
+  const rows = [['id','date','time','mood','sleep','memory','focus','notes','games']];
+  for(const e of store.entries) rows.push([e.id,e.date,e.time||'',e.mood,e.sleep,e.memory,e.focus,e.notes, JSON.stringify(e.games||{})]);
   const csv = rows.map(r=>r.map(c=>`"${String(c||'')}"`).join(',')).join('\n');
   const blob = new Blob([csv],{type:'text/csv'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='neuroassess_entries.csv'; a.click();
 }
@@ -875,8 +1255,8 @@ document.getElementById('exportPdfBtn').addEventListener('click', async ()=>{
   if(!store.entries.length){ doc.text('No entries logged.', margin, y); doc.save('neuro_report.pdf'); return; }
   const latest = store.entries[store.entries.length-1];
   doc.setFontSize(12); doc.text('Latest check-in:', margin, y); y+=14;
-  doc.setFontSize(10); doc.text(`${latest.date} • mood ${latest.mood} • memory ${latest.memory} • focus ${latest.focus} • sleep ${latest.sleep}`, margin, y); y+=14;
-  doc.text('Points: ' + store.points + ' • Streak: ' + store.streak, margin, y); y+=18;
+  doc.setFontSize(10); doc.text(`${latest.date} ${latest.time||''} • mood ${latest.mood} • memory ${latest.memory} • focus ${latest.focus} • sleep ${latest.sleep}`, margin, y); y+=14;
+  doc.text('Points: ' + store.points + ' • Streak: ' + store.streak + ' • Level: '+store.level+' ('+store.xp+' XP)', margin, y); y+=18;
   doc.text('7-day averages:', margin, y); y+=12;
   const last7 = store.entries.slice(-7);
   if(last7.length){
@@ -891,6 +1271,7 @@ document.getElementById('exportPdfBtn').addEventListener('click', async ()=>{
 document.getElementById('saveSettings').addEventListener('click', ()=>{
   store.name = document.getElementById('userName').value || store.name;
   store.settings.theme = document.getElementById('themeSelect').value;
+  store.settings.difficulty = document.getElementById('difficulty').value;
   saveStore();
   alert('Settings saved (local).');
 });
@@ -909,17 +1290,29 @@ function shuffle(a){ return a.sort(()=>Math.random()-0.5); }
 function shuffleArray(a){ return a.slice().sort(()=>Math.random()-0.5); }
 
 /* ---------- Small helpers used earlier ---------- */
-function shuffle(a){ return a.sort(()=>Math.random()-0.5); }
+
+/* small interaction sound */
+let _ac; function clickTone(){ try{ _ac = _ac || new (window.AudioContext||window.webkitAudioContext)(); const o=_ac.createOscillator(); const g=_ac.createGain(); o.frequency.value=440; o.type='sine'; g.gain.setValueAtTime(0.0001,_ac.currentTime); g.gain.exponentialRampToValueAtTime(0.04,_ac.currentTime+0.01); g.gain.exponentialRampToValueAtTime(0.0001,_ac.currentTime+0.12); o.connect(g).connect(_ac.destination); o.start(); o.stop(_ac.currentTime+0.13);}catch(_){} }
+document.addEventListener('click', (e)=>{ if(e.target.closest('button')) clickTone(); });
 
 /* ---------- Initial setup ---------- */
 document.addEventListener('DOMContentLoaded', ()=>{
   setupBoard();
   newScramble();
-  // populate date
   document.getElementById('ciDate').value = new Date().toISOString().slice(0,10);
-  // render charts
+  document.getElementById('ciTime').value = new Date().toTimeString().slice(0,5);
+  const loadEl = document.getElementById('simLoad'); if(loadEl){ loadEl.addEventListener('input', ()=>{ eegSimLoad = parseInt(loadEl.value,10)||60; }); }
+  const s = (id,fn)=>{ const el=document.getElementById(id); if(el) el.addEventListener('click', fn); };
+  s('btnDailyStart', ()=>{ switchTab('games'); newScramble(); notify('Daily task started'); });
+  s('btnPerf', ()=>{ switchTab('progress'); notify('Opening performance summary'); });
+  s('btnBrain', ()=>{ switchTab('eeg'); setTimeout(()=>{ const btn=document.getElementById('eegSimStart2'); if(btn) btn.click(); }, 50); });
+  s('btnHint', ()=>{ updateAIFeedback(); const t=document.getElementById('aiFeedback'); notify(t? t.innerText.replace('AI Feedback: ','AI: '):'AI hint'); });
+  s('btnSpeak', ()=>{ try{ const t=document.getElementById('aiFeedback'); const u=new SpeechSynthesisUtterance((t?t.innerText:'AI hint').replace('AI Feedback:','')); u.rate=1; u.pitch=1; speechSynthesis.cancel(); speechSynthesis.speak(u);}catch(e){notify('Speech not supported');} });
+  s('btnSettings', ()=>{ switchTab('settings'); });
   updateUI();
 });
+
+window.addEventListener('error', (e)=>{ const n=document.getElementById('notify'); if(n){ n.innerText='Error: '+e.message; n.classList.add('show'); setTimeout(()=> n.classList.remove('show'), 3000); } });
 
 /* Save periodically */
 setInterval(()=> saveStore(), 5000);
