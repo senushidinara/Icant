@@ -75,7 +75,19 @@ button.btn{background:linear-gradient(90deg,var(--accent),var(--accent2));border
   .coach-input{display:flex;gap:8px}
   .notify{position:fixed;right:16px;bottom:16px;padding:10px 12px;border-radius:10px;background:linear-gradient(90deg, rgba(79,70,229,0.9), rgba(6,182,212,0.9));color:#fff;box-shadow:0 8px 24px rgba(0,0,0,0.2);transform:translateY(120%);opacity:0;transition:all 0.35s ease;z-index:99}
   .notify.show{transform:translateY(0);opacity:1}
+  /* Added for Plotly/Three integration */
+  .grid-two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  @media (max-width:1100px){ .grid-two{grid-template-columns:1fr} }
+  .chart-box{height:260px}
+  .chart-tall{height:320px}
+  .control-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:8px}
+  .stage-chip{display:inline-flex;align-items:center;gap:6px;padding:4px 8px;border-radius:999px;border:1px solid rgba(255,255,255,0.06);background:rgba(255,255,255,0.04);font-size:0.9rem}
+  .three-wrap{height:300px}
+  .region-info{margin-top:6px;color:var(--muted)}
 </style>
+<script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+<script src="https://unpkg.com/three@0.160.0/build/three.min.js"></script>
+<script src="https://unpkg.com/three@0.160.0/examples/js/controls/OrbitControls.js"></script>
 </head>
 <body>
   <div class="wrap">
@@ -194,9 +206,28 @@ button.btn{background:linear-gradient(90deg,var(--accent),var(--accent2));border
           </div>
         </div>
         <div class="card" style="margin-top:12px">
+          <div class="h2">EEG Waves & Neurotransmitters (Plotly)</div>
+          <div class="control-row">
+            <span class="stage-chip" id="stageLabel">Stage: NREM</span>
+            <label class="muted">Speed</label>
+            <input id="simSpeed" type="range" min="0.5" max="3" step="0.25" value="1" />
+          </div>
+          <div class="grid-two" style="margin-top:8px">
+            <div class="chart-box" id="eegChart"></div>
+            <div class="chart-box" id="ntBar"></div>
+          </div>
+        </div>
+
+        <div class="card" style="margin-top:12px">
           <div class="h2">3D Brain Map (p5.js)</div>
           <div id="brain3d" style="height:260px"></div>
           <div class="muted" style="margin-top:6px">Real-time glow scales with attention/simulation load</div>
+        </div>
+
+        <div class="card" style="margin-top:12px">
+          <div class="h2">3D Brain Map (Three.js)</div>
+          <div id="brainThree" class="three-wrap"></div>
+          <div id="regionInfo" class="region-info">Click a region to see details.</div>
         </div>
       </section>
 
@@ -1107,6 +1138,20 @@ if(eegSimStartBtn){
   });
   eegSimStopBtn.addEventListener('click', ()=>{ cancelEegSim(); document.getElementById('attnLabel').innerText = 'Attention: -'; });
 }
+
+// Plotly EEG + Three.js brain integration
+let plotlyReady=false, plotlyTimer=null, simTime=0, simSpeed=1, currentStage='NREM';
+let waveLive={delta:10, theta:6, alpha:4, beta:2};
+function initPlotlyEEG(){ try{ if(plotlyReady) return; if(!window.Plotly) return; const w=document.getElementById('eegChart'); const b=document.getElementById('ntBar'); if(!w||!b) return; Plotly.newPlot(w,[{x:[],y:[],mode:'lines',name:'Delta',line:{color:'#4f46e5'}},{x:[],y:[],mode:'lines',name:'Theta',line:{color:'#22d3ee'}},{x:[],y:[],mode:'lines',name:'Alpha',line:{color:'#a78bfa'}},{x:[],y:[],mode:'lines',name:'Beta',line:{color:'#fbbf24'}}],{title:'Simulated EEG Waves',paper_bgcolor:'rgba(0,0,0,0)',plot_bgcolor:'rgba(255,255,255,0.02)',margin:{l:40,r:10,t:30,b:30},xaxis:{title:'Time (s)'},yaxis:{title:'Amplitude (μV)'},showlegend:true},{displayModeBar:false}); Plotly.newPlot(b,[{x:['Dopamine','Serotonin','Acetylcholine'],y:[50,40,30],type:'bar',marker:{color:['#10b981','#22d3ee','#fbbf24']}}],{title:'Neurotransmitters',paper_bgcolor:'rgba(0,0,0,0)',plot_bgcolor:'rgba(255,255,255,0.02)',margin:{l:40,r:10,t:30,b:30},yaxis:{range:[0,100]}},{displayModeBar:false}); plotlyReady=true; }catch(_){}}
+function setStage(stage){ if(currentStage===stage) return; currentStage=stage; const lab=document.getElementById('stageLabel'); if(lab) lab.innerText='Stage: '+stage; const el=document.getElementById('eegChart'); if(el && window.Plotly){ const bg = stage==='REM' ? 'rgba(88,28,135,0.18)' : 'rgba(15,23,42,0.14)'; Plotly.relayout(el,{plot_bgcolor:bg}); } }
+function startPlotlySim(){ try{ if(plotlyTimer||!window.Plotly) return; initPlotlyEEG(); plotlyTimer = setInterval(()=>{ const load = (window.eegSimLoad||60)/60; simTime += 0.6*simSpeed; const noise=()=> (Math.random()-0.5)*0.5; waveLive.delta = 10 + 3*Math.sin(simTime*0.5) + noise(); waveLive.theta = 6 + 2*Math.sin(simTime*0.8+1.2) + noise(); waveLive.alpha = 4 + 1.5*Math.sin(simTime*1.1+0.6) + noise(); waveLive.beta  = 2 + 1.2*Math.sin(simTime*1.6+2.0) + noise(); for(const k in waveLive) waveLive[k] = Math.max(0.1, waveLive[k]*load); const w=document.getElementById('eegChart'); if(w) Plotly.extendTraces(w,{x:[[simTime],[simTime],[simTime],[simTime]], y:[[waveLive.delta],[waveLive.theta],[waveLive.alpha],[waveLive.beta]]}, [0,1,2,3], 180); const d = clamp(Math.round(50 + waveLive.beta*10),0,100); const s = clamp(Math.round(40 + waveLive.alpha*8),0,100); const a = clamp(Math.round(30 + waveLive.theta*9),0,100); const b=document.getElementById('ntBar'); if(b) Plotly.restyle(b,'y', [[d,s,a]]); const stage = (Math.floor(simTime/6)%2===0)?'NREM':'REM'; setStage(stage); if(stage==='REM' && threeScene) spawnDream(3); updateThreeGlow(); }, 600); }catch(_){}}
+function stopPlotlySim(){ try{ if(plotlyTimer){ clearInterval(plotlyTimer); plotlyTimer=null; } }catch(_){ }
+}
+let threeScene=null, threeRenderer=null, threeCamera=null, threeControls=null, threeLobes=null, threeAnimReq=null;
+function initThreeBrain(){ try{ if(threeScene || !window.THREE) return; const c=document.getElementById('brainThree'); if(!c) return; const w=c.clientWidth, h=c.clientHeight; const scene=new THREE.Scene(); const cam=new THREE.PerspectiveCamera(45, w/h, 0.1, 100); cam.position.set(0,1.6,4.2); const renderer=new THREE.WebGLRenderer({antialias:true,alpha:true}); renderer.setSize(w,h); c.innerHTML=''; c.appendChild(renderer.domElement); const ambient=new THREE.AmbientLight(0xffffff,0.5); scene.add(ambient); const key=new THREE.PointLight(0xffffff,1.2); key.position.set(3,3,4); scene.add(key); const geo=new THREE.SphereGeometry(1.2,48,32); const mat=new THREE.MeshStandardMaterial({color:0x334155,metalness:0.2,roughness:0.8,transparent:true,opacity:0.35}); const brain=new THREE.Mesh(geo,mat); brain.scale.set(1.0,0.8,1.3); scene.add(brain); const makeLobe=(color,pos,rad)=>{ const g=new THREE.SphereGeometry(rad,32,24); const m=new THREE.MeshStandardMaterial({color,metalness:0.1,roughness:0.6,emissive:color,emissiveIntensity:0.1,transparent:true,opacity:0.8}); const mesh=new THREE.Mesh(g,m); mesh.position.copy(pos); scene.add(mesh); return mesh; }; const frontal=makeLobe(0x4f46e5,new THREE.Vector3(0.6,0.2,0.6),0.55); const temporal=makeLobe(0x22d3ee,new THREE.Vector3(-0.9,-0.2,0.1),0.5); const prefrontal=makeLobe(0xfbbf24,new THREE.Vector3(0.8,0.3,1.0),0.4); threeLobes={frontal,temporal,prefrontal}; if(THREE.OrbitControls){ threeControls=new THREE.OrbitControls(cam, renderer.domElement); threeControls.enableDamping=true; threeControls.dampingFactor=0.08; } const raycaster=new THREE.Raycaster(); const mouse=new THREE.Vector2(); renderer.domElement.addEventListener('pointerdown',(e)=>{ const rect=renderer.domElement.getBoundingClientRect(); mouse.x=((e.clientX-rect.left)/rect.width)*2-1; mouse.y=-((e.clientY-rect.top)/rect.height)*2+1; raycaster.setFromCamera(mouse, cam); const hits=raycaster.intersectObjects(Object.values(threeLobes)); if(hits.length){ const obj=hits[0].object; const pair=Object.entries(threeLobes).find(([k,v])=>v===obj); const name=pair?pair[0]:''; let info=''; if(name==='frontal') info='Frontal (Delta) — deep rest & consolidation'; if(name==='temporal') info='Temporal (Theta) — memory encoding & creativity'; if(name==='prefrontal') info='Prefrontal (Beta) — active thinking & focus'; const ri=document.getElementById('regionInfo'); if(ri){ ri.innerText=info+` | DA ${Math.round(50 + waveLive.beta*10)} • 5-HT ${Math.round(40+waveLive.alpha*8)} • ACh ${Math.round(30+waveLive.theta*9)}`; } } }); function onResize(){ const w=c.clientWidth, h=c.clientHeight; cam.aspect=w/h; cam.updateProjectionMatrix(); renderer.setSize(w,h); } window.addEventListener('resize', onResize); threeScene=scene; threeRenderer=renderer; threeCamera=cam; (function animate(){ threeAnimReq=requestAnimationFrame(animate); if(threeControls) threeControls.update(); brain.rotation.y+=0.003; renderer.render(scene, cam); })(); }catch(_){}}
+function updateThreeGlow(){ try{ if(!threeLobes) return; const d=clamp(waveLive.delta/14,0.05,2.0); const t=clamp(waveLive.theta/10,0.05,2.0); const b=clamp(waveLive.beta/6,0.05,2.0); threeLobes.frontal.material.emissiveIntensity=d; threeLobes.temporal.material.emissiveIntensity=t; threeLobes.prefrontal.material.emissiveIntensity=b; }catch(_){}}
+function spawnDream(n){ try{ if(!threeScene) return; for(let i=0;i<n;i++){ const g=new THREE.SphereGeometry(0.05,12,10); const m=new THREE.MeshStandardMaterial({color:0xffffff,emissive:0x9f7aea,emissiveIntensity:1,transparent:true,opacity:0.9}); const p=new THREE.Mesh(g,m); p.position.set((Math.random()-0.5)*1.2,(Math.random()-0.5)*1.0,(Math.random()*1.2+0.3)); const dx=(Math.random()-0.5)*0.02, dy=(Math.random()-0.5)*0.02, dz=(Math.random()-0.5)*0.02; let life=60; threeScene.add(p); (function tick(){ life--; p.position.x+=dx; p.position.y+=dy; p.position.z+=dz; p.material.opacity*=0.96; if(life>0) requestAnimationFrame(tick); else { threeScene.remove(p); p.geometry.dispose(); p.material.dispose(); } })(); } }catch(_){}}
+(function hookup(){ try{ const speedEl=document.getElementById('simSpeed'); if(speedEl){ speedEl.addEventListener('input', ()=>{ simSpeed = Math.max(0.25, parseFloat(speedEl.value)||1); }); } const s=document.getElementById('eegSimStart'); if(s){ s.addEventListener('click', ()=>{ initPlotlyEEG(); startPlotlySim(); initThreeBrain(); }); } const st=document.getElementById('eegSimStop'); if(st){ st.addEventListener('click', ()=>{ stopPlotlySim(); }); } }catch(_){ } })();
 
 // p5.js 3D brain map (WebGL)
 (function(){
