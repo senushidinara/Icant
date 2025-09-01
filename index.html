@@ -535,30 +535,41 @@ function migrateStore(){ if(!store.xp) store.xp=0; if(!store.level) store.level=
 /* ---------- UI refs ---------- */
 const tabs = document.querySelectorAll('nav.side .tab');
 const sections = document.querySelectorAll('main .fade-in, main section');
-tabs.forEach(t => t.addEventListener('click', ()=> switchTab(t.getAttribute('data-tab'))));
+// Delegated events so clicks always work
+document.addEventListener('click', (ev)=>{
+  const t = ev.target.closest('nav.side .tab');
+  if(t){ switchTab(t.getAttribute('data-tab')); }
+});
+document.addEventListener('keydown', (ev)=>{
+  const t = ev.target.closest && ev.target.closest('nav.side .tab');
+  if(t && (ev.key==='Enter' || ev.key===' ')){ ev.preventDefault(); switchTab(t.getAttribute('data-tab')); }
+});
 function switchTab(id){
-  tabs.forEach(t=>t.classList.toggle('active', t.getAttribute('data-tab')===id));
+  document.querySelectorAll('nav.side .tab').forEach(t=>t.classList.toggle('active', t.getAttribute('data-tab')===id));
   document.querySelectorAll('#mainArea > section').forEach(s=> s.style.display = (s.id===id ? 'block' : 'none'));
 }
 
 /* ---------- Update UI ---------- */
 function updateUI(){
-  document.getElementById('sessionId').innerText = store.id;
-  document.getElementById('pointBadge').innerText = store.points;
-  document.getElementById('points').innerText = store.points;
-  document.getElementById('streak').innerText = store.streak || 0;
-  updateLevelUI();
-  // last check-in
-  if(store.entries.length){
-    const last = store.entries[store.entries.length-1];
-    document.getElementById('lastCheck').innerText = `${last.date}${last.time?(' '+last.time):''} | mood ${last.mood} | mem ${last.memory} | focus ${last.focus}`;
-  } else document.getElementById('lastCheck').innerText = 'No check-ins';
-  // quick summary & trends:
-  renderSummary();
-  renderMiniTrend();
-  renderProgressChart();
-  renderRecentActivity();
-  updateAIFeedback();
+  try{
+    document.getElementById('sessionId').innerText = store.id;
+    document.getElementById('pointBadge').innerText = store.points;
+    document.getElementById('points').innerText = store.points;
+    document.getElementById('streak').innerText = store.streak || 0;
+    updateLevelUI();
+    if(store.entries.length){
+      const last = store.entries[store.entries.length-1];
+      document.getElementById('lastCheck').innerText = `${last.date}${last.time?(' '+last.time):''} | mood ${last.mood} | mem ${last.memory} | focus ${last.focus}`;
+    } else document.getElementById('lastCheck').innerText = 'No check-ins';
+    renderSummary();
+    renderMiniTrend();
+    renderProgressChart();
+    renderRecentActivity();
+    updateAIFeedback();
+  } catch(err){
+    console.error(err);
+    const n=document.getElementById('notify'); if(n){ n.innerText='Error: '+(err && err.message? err.message : 'unknown'); n.classList.add('show'); setTimeout(()=> n.classList.remove('show'), 3000); }
+  }
 }
 
 /* ---------- Theme toggle ---------- */
@@ -1216,10 +1227,12 @@ document.addEventListener('DOMContentLoaded', ()=>{
   s('btnDailyStart', ()=>{ switchTab('games'); newScramble(); notify('Daily task started'); });
   s('btnPerf', ()=>{ switchTab('progress'); notify('Opening performance summary'); });
   s('btnBrain', ()=>{ switchTab('eeg'); setTimeout(()=>{ const btn=document.getElementById('eegSimStart2'); if(btn) btn.click(); }, 50); });
-  s('btnHint', ()=>{ updateAIFeedback(); notify(document.getElementById('aiFeedback').innerText.replace('AI Feedback: ','AI: ')); });
+  s('btnHint', ()=>{ updateAIFeedback(); const t=document.getElementById('aiFeedback'); notify(t? t.innerText.replace('AI Feedback: ','AI: '):'AI hint'); });
   s('btnSettings', ()=>{ switchTab('settings'); });
   updateUI();
 });
+
+window.addEventListener('error', (e)=>{ const n=document.getElementById('notify'); if(n){ n.innerText='Error: '+e.message; n.classList.add('show'); setTimeout(()=> n.classList.remove('show'), 3000); } });
 
 /* Save periodically */
 setInterval(()=> saveStore(), 5000);
