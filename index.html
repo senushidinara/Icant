@@ -1151,7 +1151,9 @@ function updateAIFeedback(){
   if(bestRT && bestRT<300) msg.push('Great reaction times — consider adding more memory drills.');
   const mm = store.metrics.memoryMatch.slice(-1)[0]; if(mm && mm.acc>=85) msg.push('Strong memory accuracy — level up to harder patterns.');
   if(!msg.length) msg.push('Complete a check-in or game to unlock personalized insights.');
-  el.innerText = 'AI Feedback: ' + msg.join(' ');
+  const text = 'AI Feedback: ' + msg.join(' ');
+  if(window.Typed){ try{ if(window.aiTyped) window.aiTyped.destroy(); el.innerHTML=''; window.aiTyped = new Typed('#aiFeedback',{strings:[text],typeSpeed:26, backSpeed:0, showCursor:false}); }catch(_){ el.innerText = text; } }
+  else el.innerText = text;
 }
 
 const coachLog = document.getElementById('coachLog');
