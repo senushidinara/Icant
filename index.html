@@ -34,7 +34,7 @@
   button.btn{background:linear-gradient(90deg,var(--accent),var(--accent2));border:none;color:white;padding:10px 12px;border-radius:10px;cursor:pointer;display:inline-flex;gap:8px;align-items:center}
   button.ghost{background:transparent;border:1px solid rgba(255,255,255,0.04);color:#e6eef8;padding:8px 10px;border-radius:8px;cursor:pointer}
   input,select,textarea{background:transparent;border:1px solid rgba(255,255,255,0.04);padding:10px;border-radius:8px;color:var(--muted);width:100%}
-  .card{background:linear-gradient(180deg, rgba(255,255,255,0.015), rgba(255,255,255,0.01));padding:12px;border-radius:10px;border:1px solid rgba(255,255,255,0.02)}
+  .card{background:linear-gradient(180deg, rgba(255,255,255,0.015), rgba(255,255,255,0.01));padding:12px;border-radius:10px;border:1px solid rgba(255,255,255,0.02);box-shadow:0 8px 24px rgba(0,0,0,0.18);backdrop-filter:blur(6px)}
   .games-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px}
   .game{padding:10px;border-radius:10px;background:linear-gradient(90deg, rgba(255,255,255,0.01), rgba(255,255,255,0.02));border:1px solid rgba(255,255,255,0.02);text-align:center}
   .big-count{font-size:2rem;font-weight:800;color:var(--accent)}
@@ -542,6 +542,7 @@ function updateUI(){
   renderSummary();
   renderMiniTrend();
   renderProgressChart();
+  renderRecentActivity();
   updateAIFeedback();
 }
 
@@ -576,6 +577,7 @@ ciSave.addEventListener('click', ()=>{
     memory: clamp(Number(ciMemory.value || 0), 0, 10),
     focus: clamp(Number(ciFocus.value || 0), 0, 10),
     notes: (ciNotes.value || ''),
+    at: Date.now(),
     games: {}
   };
   store.entries.push(entry);
@@ -589,6 +591,43 @@ ciSave.addEventListener('click', ()=>{
 });
 
 ciReset.addEventListener('click', ()=> { ciMood.value = 5; ciMoodLabel.innerText = 5; ciSleep.value=''; ciMemory.value=''; ciFocus.value=''; ciNotes.value=''; });
+
+/* ---------- Mini check-in tests ---------- */
+const miniResult = document.getElementById('miniResult');
+function miniSeq(){
+  const len = 2 + Math.floor(Math.random()*5);
+  const seq = Array.from({length:len}, ()=> Math.floor(Math.random()*10));
+  miniResult.innerText = 'Memorize: ' + seq.join(' ');
+  setTimeout(()=>{
+    miniResult.innerText = 'Type the sequence separated by spaces';
+    const ans = prompt('Enter the sequence:');
+    const arr = (ans||'').trim().split(/\s+/).map(Number);
+    const correct = arr.length===seq.length && arr.every((v,i)=>v===seq[i]);
+    const acc = Math.round(100 * (arr.filter((v,i)=>v===seq[i]).length/len));
+    miniResult.innerText = correct ? 'Correct' : 'Incorrect (was '+seq.join(' ')+')';
+    store.metrics.memoryMatch.push({mini:true, len, acc, at:Date.now()});
+    if(correct){ awardPoints(8); awardXP(6); }
+    saveStore(); renderRecentActivity(); updateAIFeedback();
+  }, 1200);
+}
+function miniWord(){
+  const WORDS = ['tree','cloud','stone','glass','river','mount','paper','clock','apple','chair','music','light','ocean','garden','planet','silver'];
+  const sample = shuffleArray(WORDS).slice(0,5);
+  miniResult.innerText = 'Memorize words: '+sample.join(', ');
+  setTimeout(()=>{
+    miniResult.innerText = 'Recall as many as you can (comma separated)';
+    const ans = prompt('Type recalled words (comma separated):')||'';
+    const got = ans.toLowerCase().split(',').map(s=>s.trim()).filter(Boolean);
+    const correct = got.filter(w=> sample.includes(w)).length;
+    miniResult.innerText = 'You recalled '+correct+' / '+sample.length;
+    awardPoints(correct*3); awardXP(correct*2);
+    store.metrics.scramble.push({recall:true, total:sample.length, correct, at:Date.now()});
+    saveStore(); renderRecentActivity(); updateAIFeedback();
+  }, 1500);
+}
+
+document.getElementById('miniSeqBtn').addEventListener('click', miniSeq);
+document.getElementById('miniWordBtn').addEventListener('click', miniWord);
 
 /* ---------- Summary & Trends ---------- */
 function renderSummary(){
@@ -652,6 +691,20 @@ function renderProgressChart(){
     data: {labels, datasets:[{label:'Memory',data:mem,backgroundColor:'#4f46e5'},{label:'Focus',data:focus,backgroundColor:'#06b6d4'}]},
     options:{responsive:true,maintainAspectRatio:false,scales:{y:{min:0,max:10}}}
   });
+}
+
+function renderRecentActivity(){
+  const out = document.getElementById('recentActivity');
+  const items = [];
+  (store.metrics.reaction||[]).slice(-8).forEach(x=> items.push({at:x.at, text:`Reaction ${x.rt} ms`}));
+  (store.metrics.scramble||[]).slice(-8).forEach(x=> items.push({at:x.at, text: x.recall?`Recall ${x.correct}/${x.total}`:(x.correct?`Scramble ${x.time}s`:`Scramble miss`)}));
+  (store.metrics.memoryMatch||[]).slice(-8).forEach(x=> items.push({at:x.at, text: x.mini?`Seq mini acc ${x.acc}%`:`MemoryMatch ${x.score}` }));
+  (store.metrics.nback||[]).slice(-8).forEach(x=> items.push({at:x.at, text:`N-back ${x.acc}%`}));
+  (store.badges||[]).slice(-6).forEach(b=> items.push({at: Date.parse(b.at)||Date.now(), text:`Badge: ${b.label}`}));
+  (store.entries||[]).slice(-3).forEach(e=> items.push({at: e.at||Date.now(), text:`Check-in ${e.date} mood ${e.mood}`}));
+  items.sort((a,b)=>(b.at||0)-(a.at||0));
+  const top = items.slice(0,6);
+  out.innerHTML = top.length ? top.map(i=>`<div class="muted">• ${i.text}</div>`).join('') : 'No recent activity';
 }
 
 /* ---------- Games: Memory Card Match ---------- */
@@ -1129,7 +1182,6 @@ function shuffle(a){ return a.sort(()=>Math.random()-0.5); }
 function shuffleArray(a){ return a.slice().sort(()=>Math.random()-0.5); }
 
 /* ---------- Small helpers used earlier ---------- */
-function shuffle(a){ return a.sort(()=>Math.random()-0.5); }
 
 /* ---------- Initial setup ---------- */
 document.addEventListener('DOMContentLoaded', ()=>{
